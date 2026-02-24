@@ -1,6 +1,6 @@
 # APY
 
-A Rust library for working with the APY specification format, providing data structures and
+A Rust library for working with the [APY specification format](https://github.com/apy-spec/apy-spec), providing data structures and
 serialization/deserialization capabilities for different versions of APY.
 
 ## Installation
