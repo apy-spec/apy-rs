@@ -1,0 +1,27 @@
+[package]
+name = "apy"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust library for working with the APY specification format, providing data structures and serialization/deserialization capabilities for different versions of APY."
+license = "Apache-2.0 OR MIT"
+readme = "README.md"
+
+[dependencies]
+schemars = { version = "^1.2.1", features = ["preserve_order"], optional = true }
+serde = { version = "^1.0.228", features = ["derive"] }
+serde_json = "^1.0.149"
+serde-saphyr = { version = "^0.0.20", optional = true }
+clap = { version = "^4.5.60", features = ["derive"], optional = true }
+thiserror = "^2.0.18"
+unicode-ident = "^1.0.24"
+unicode-normalization = "^0.1.25"
+
+[features]
+schemars = ["dep:schemars"]
+yaml = ["dep:serde-saphyr"]
+cli = ["dep:clap"]
+
+[[bin]]
+name = "apy"
+path = "src/main.rs"
+required-features = ["cli"]
