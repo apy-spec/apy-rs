@@ -220,6 +220,28 @@ impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
     }
 }
 
+impl<T> From<OneOrMany<T>> for Vec<T> {
+    /// Unwraps the `Vec<T>` from the `OneOrMany<T>`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::OneOrMany;
+    ///
+    /// let many = OneOrMany::try_from(vec![1, 2, 3])?;
+    /// let vec: Vec<u32> = Vec::from(many);
+    ///
+    /// assert_eq!(vec, vec![1, 2, 3]);
+    /// #     Ok(())
+    /// # }
+    /// ```
+    fn from(one_or_many: OneOrMany<T>) -> Self {
+        one_or_many.elements
+    }
+}
+
 impl<T> AsRef<[T]> for OneOrMany<T> {
     fn as_ref(&self) -> &[T] {
         &self.elements
