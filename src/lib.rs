@@ -104,16 +104,12 @@ impl<T> OneOrMany<T> {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     ///
     /// let mut many = OneOrMany::one(1);
     /// many.push(2);
     ///
     /// assert_eq!(many.as_ref(), [1, 2]);
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn push(&mut self, value: T) {
         self.elements.push(value);
@@ -124,16 +120,12 @@ impl<T> OneOrMany<T> {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     ///
     /// let mut many = OneOrMany::one(1);
     /// many.extend([2, 3]);
     ///
     /// assert_eq!(many.as_ref(), [1, 2, 3]);
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         self.elements.extend(iter);
@@ -146,6 +138,7 @@ impl<T> OneOrMany<T> {
     ///
     /// ```rust
     /// # use std::error::Error;
+    /// #
     /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     ///
@@ -153,6 +146,7 @@ impl<T> OneOrMany<T> {
     ///
     /// assert_eq!(many.pop(), Some(3));
     /// assert_eq!(many.as_ref(), [1, 2]);
+    /// #
     /// #     Ok(())
     /// # }
     /// ```
