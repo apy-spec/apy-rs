@@ -208,6 +208,28 @@ pub struct QualifiedName {
 }
 
 impl QualifiedName {
+    /// Creates a new `QualifiedName` with the given identifiers.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::v1::{Identifier, QualifiedName};
+    /// use apy::OneOrMany;
+    ///
+    /// let qualified_name = QualifiedName::new(OneOrMany::one(Identifier::try_from("my_module")?));
+    ///
+    /// assert_eq!(qualified_name.join(), "my_module");
+    /// #
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn new(identifiers: OneOrMany<Identifier>) -> Self {
+        Self { identifiers }
+    }
+
     /// Joins the identifiers of the qualified name with dots to create a string representation
     /// of the qualified name.
     pub fn join(&self) -> String {
@@ -245,14 +267,12 @@ impl TryFrom<&str> for QualifiedName {
     /// assert!(QualifiedName::try_from("").is_err());
     /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(Self {
-            identifiers: OneOrMany::try_from(
-                value
-                    .split('.')
-                    .map(Identifier::try_from)
-                    .collect::<Result<Vec<_>, _>>()?,
-            )?,
-        })
+        Ok(Self::new(OneOrMany::try_from(
+            value
+                .split('.')
+                .map(Identifier::try_from)
+                .collect::<Result<Vec<_>, _>>()?,
+        )?))
     }
 }
 
