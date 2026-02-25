@@ -93,6 +93,76 @@ impl<T> OneOrMany<T> {
     pub fn last(&self) -> &T {
         self.elements.last().expect(EXPECT_SELF_NON_EMPTY_MESSAGE)
     }
+
+    /// Returns the number of elements in the `OneOrMany` instance.
+    pub fn len(&self) -> usize {
+        self.elements.len()
+    }
+
+    /// Adds a value to the `OneOrMany` instance.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::OneOrMany;
+    ///
+    /// let mut many = OneOrMany::one(1);
+    /// many.push(2);
+    ///
+    /// assert_eq!(many.as_ref(), [1, 2]);
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn push(&mut self, value: T) {
+        self.elements.push(value);
+    }
+
+    /// Extends the `OneOrMany` instance with values from an iterator.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::OneOrMany;
+    ///
+    /// let mut many = OneOrMany::one(1);
+    /// many.extend([2, 3]);
+    ///
+    /// assert_eq!(many.as_ref(), [1, 2, 3]);
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        self.elements.extend(iter);
+    }
+
+    /// Removes the last element from the `OneOrMany` instance and returns it, if there is
+    /// more than one element. Returns `None` if there is only one element.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::OneOrMany;
+    ///
+    /// let mut many = OneOrMany::try_from(vec![1, 2, 3])?;
+    ///
+    /// assert_eq!(many.pop(), Some(3));
+    /// assert_eq!(many.as_ref(), [1, 2]);
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn pop(&mut self) -> Option<T> {
+        if self.elements.len() == 1 {
+            None
+        } else {
+            self.elements.pop()
+        }
+    }
 }
 
 impl<T: Serialize> Serialize for OneOrMany<T> {
