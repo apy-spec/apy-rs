@@ -348,6 +348,23 @@ impl From<serde_saphyr::Error> for ParseApyError {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Error)]
+#[error("Failed to dump APY: {0}")]
+pub struct DumpApyError(String);
+
+impl From<serde_json::Error> for DumpApyError {
+    fn from(error: serde_json::Error) -> Self {
+        DumpApyError(error.to_string())
+    }
+}
+
+#[cfg(feature = "yaml")]
+impl From<serde_saphyr::ser::Error> for DumpApyError {
+    fn from(error: serde_saphyr::ser::Error) -> Self {
+        DumpApyError(error.to_string())
+    }
+}
+
 /// The main APY structure, which can represent the different versions of the APY format.
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
@@ -377,6 +394,24 @@ impl Apy {
         serde_json::from_reader(reader)?
     }
 
+    /// Dumps the `Apy` instance to a JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to JSON.
+    pub fn to_json_string(&self) -> Result<String, DumpApyError> {
+        Ok(serde_json::to_string_pretty(self)?)
+    }
+
+    /// Dumps the `Apy` instance to a writer as JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to JSON or if there is an I/O error while writing to the provided writer.
+    pub fn to_json_writer(&self, writer: impl std::io::Write) -> Result<(), DumpApyError> {
+        Ok(serde_json::to_writer_pretty(writer, self)?)
+    }
+
     /// Parses an `Apy` from a YAML string.
     ///
     /// # Errors
@@ -395,6 +430,26 @@ impl Apy {
     #[cfg(feature = "yaml")]
     pub fn from_yaml_reader(reader: impl std::io::Read) -> Result<Self, ParseApyError> {
         serde_saphyr::from_reader(reader)?
+    }
+
+    /// Dumps the `Apy` instance to a YAML string.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to YAML.
+    #[cfg(feature = "yaml")]
+    pub fn to_yaml_string(&self) -> Result<String, DumpApyError> {
+        Ok(serde_saphyr::to_string(self)?)
+    }
+
+    /// Dumps the `Apy` instance to a writer as YAML.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to YAML or if there is an I/O error while writing to the provided writer.
+    #[cfg(feature = "yaml")]
+    pub fn to_yaml_writer(&self, writer: &mut impl std::io::Write) -> Result<(), DumpApyError> {
+        Ok(serde_saphyr::to_io_writer(writer, self)?)
     }
 
     /// Returns the version of the APY format represented by this `Apy` instance.
