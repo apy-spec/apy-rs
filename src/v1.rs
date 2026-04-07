@@ -329,7 +329,7 @@ pub enum PythonValue {
     Int { int: String },
     Bool { bool: bool },
     Float { float: String },
-    Complex { real: String, image: String },
+    Complex { real: String, imaginary: String },
     Str { str: String },
     Bytes { bytes: Vec<u8> },
     List { list: Vec<PythonValue> },
