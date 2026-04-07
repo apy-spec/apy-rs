@@ -367,6 +367,7 @@ pub struct Type {
     /// The module where the type is defined.
     /// It can be `None` if the type is defined in the same module as the attribute that references it,
     /// or if it is a built-in type.
+    #[serde(default)]
     pub module: Option<QualifiedName>,
 
     /// Reference to the index of the attribute in the history.
