@@ -327,11 +327,13 @@ pub enum OtherPythonValue {
 #[serde(untagged)]
 pub enum PythonValue {
     Int { int: String },
+    Bool { bool: bool },
     Float { float: String },
     Complex { complex: String },
     Str { str: String },
-    Tuple { tuple: Vec<PythonValue> },
+    Bytes { bytes: Vec<u8> },
     List { list: Vec<PythonValue> },
+    Tuple { tuple: Vec<PythonValue> },
     Dict { dict: BTreeMap<String, PythonValue> },
     Other(OtherPythonValue),
 }
