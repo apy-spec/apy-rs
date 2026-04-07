@@ -1,7 +1,7 @@
 //! A Rust library for working with the APY specification format, providing data structures and
 //! serialization/deserialization capabilities for different versions of APY.
 use serde::{Deserialize, Serialize};
-pub use serde_json::{Map, Value};
+pub use serde_json::{Error, Map, Value, to_value};
 #[cfg(feature = "yaml")]
 use serde_saphyr;
 use std::ops::Deref;
