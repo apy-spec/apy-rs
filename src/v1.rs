@@ -364,6 +364,11 @@ pub enum TypeArgument {
 pub struct Type {
     pub id: QualifiedName,
 
+    /// The module where the type is defined.
+    /// It can be `None` if the type is defined in the same module as the attribute that references it,
+    /// or if it is a built-in type.
+    pub module: Option<QualifiedName>,
+
     /// Reference to the index of the attribute in the history.
     /// Used when type are overridden in the same namespace.
     #[serde(default)]
@@ -390,6 +395,7 @@ impl Type {
     /// let my_type = Type::new(QualifiedName::try_from("int")?);
     ///
     /// assert_eq!(my_type.id.join(), "int");
+    /// assert!(my_type.module.is_none());
     /// assert_eq!(my_type.history_index, 0);
     /// assert!(my_type.arguments.is_empty());
     /// assert!(my_type.extensions.is_empty());
@@ -400,6 +406,7 @@ impl Type {
     pub fn new(id: QualifiedName) -> Self {
         Self {
             id,
+            module: None,
             history_index: 0,
             arguments: Vec::new(),
             extensions: BTreeMap::new(),
