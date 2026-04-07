@@ -329,6 +329,41 @@ impl<T> IntoIterator for OneOrMany<T> {
     }
 }
 
+/// Constructs a `OneOrMany<T>` from one or more expressions.
+///
+/// Calling this macro without any arguments will result in a compile-time error.
+///
+/// # Examples
+///
+/// ```rust
+/// use apy::{one_or_many, OneOrMany};
+///
+/// let single: OneOrMany<u32> = one_or_many![42];
+/// let many: OneOrMany<u32> = one_or_many![1, 2, 3];
+///
+/// assert_eq!(single.first(), &42);
+/// assert_eq!(single.last(), &42);
+///
+/// assert_eq!(many.first(), &1);
+/// assert_eq!(many.last(), &3);
+/// ```
+///
+/// Omitting all arguments will cause a compile-time error:
+/// ```compile_fail
+/// use apy::{one_or_many, OneOrMany};
+///
+/// let empty: OneOrMany<u32> = one_or_many![];
+/// ```
+#[macro_export]
+macro_rules! one_or_many {
+    () => {
+        compile_error!("`one_or_many!` requires at least one element");
+    };
+    ($($x:expr),+ $(,)?) => {
+        $crate::OneOrMany::try_from(vec![$($x),+]).expect("`one_or_many!` should never be empty")
+    };
+}
+
 pub mod v1;
 
 #[derive(Debug, Serialize, Deserialize, Error)]
