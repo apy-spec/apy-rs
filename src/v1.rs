@@ -54,34 +54,43 @@ pub struct Identifier {
     name: String,
 }
 
-impl TryFrom<&str> for Identifier {
-    type Error = FromInvalidIdentifierError;
-
-    /// Tries to convert a string into an [`Identifier`], returning an error if the string is not
-    /// a valid Python identifier.
+impl Identifier {
+    /// Parses a string into an [`Identifier`].
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword,
-    /// or does not match the syntax of a valid Python identifier.
+    /// Panics if the string is empty, is a Python keyword, or does not match the syntax of a valid
+    /// Python identifier.
     ///
     /// # Examples
     ///
     /// ```rust
     /// use apy::v1::Identifier;
     ///
-    /// assert!(Identifier::try_from("valid_identifier").is_ok());
+    /// let identifier = Identifier::parse("valid_identifier");
     ///
-    /// assert!(Identifier::try_from("").is_err());
-    /// assert!(Identifier::try_from("for").is_err());
-    /// assert!(Identifier::try_from("1invalid").is_err());
+    /// assert_eq!(identifier.as_ref(), "valid_identifier");
     /// ```
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let normalized_value = value.nfkc().collect::<String>();
+    pub fn parse(name: &str) -> Self {
+        Self::try_parse(name).expect("name is not a valid Python identifier")
+    }
 
-        if normalized_value.is_empty()
+    /// Attempts to parse a string into an [`Identifier`], returning an error if the string is not a
+    /// valid Python identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword, or does
+    /// not match the syntax of a valid Python identifier.
+    ///
+    /// # Examples
+    ///
+    pub fn try_parse(name: &str) -> Result<Self, FromInvalidIdentifierError> {
+        let normalized_name = name.nfkc().collect::<String>();
+
+        if normalized_name.is_empty()
             || matches!(
-                normalized_value.as_str(),
+                normalized_name.as_str(),
                 "False"
                     | "await"
                     | "else"
@@ -122,7 +131,7 @@ impl TryFrom<&str> for Identifier {
             return Err(FromInvalidIdentifierError);
         }
 
-        let mut chars = normalized_value.chars();
+        let mut chars = normalized_name.chars();
 
         let is_valid_identifier = if let Some(first) = chars.next() {
             (first == '_' || is_xid_start(first)) && chars.all(|c| c == '_' || is_xid_continue(c))
@@ -135,8 +144,35 @@ impl TryFrom<&str> for Identifier {
         }
 
         Ok(Identifier {
-            name: normalized_value,
+            name: normalized_name,
         })
+    }
+}
+
+impl TryFrom<&str> for Identifier {
+    type Error = FromInvalidIdentifierError;
+
+    /// Attempts to convert a string into an [`Identifier`], returning an error if the string is not
+    /// a valid Python identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword,
+    /// or does not match the syntax of a valid Python identifier.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::Identifier;
+    ///
+    /// assert!(Identifier::try_from("valid_identifier").is_ok());
+    ///
+    /// assert!(Identifier::try_from("").is_err());
+    /// assert!(Identifier::try_from("for").is_err());
+    /// assert!(Identifier::try_from("1invalid").is_err());
+    /// ```
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_parse(value)
     }
 }
 
@@ -244,7 +280,7 @@ impl QualifiedName {
 impl TryFrom<&str> for QualifiedName {
     type Error = FromInvalidQualifiedNameError;
 
-    /// Tries to convert a `&str` into a [`QualifiedName`], returning an error if any of the identifiers
+    /// Attempts to convert a `&str` into a [`QualifiedName`], returning an error if any of the identifiers
     /// in the qualified name are invalid or if the qualified name is empty.
     ///
     /// # Errors
@@ -603,7 +639,7 @@ impl<'de> Deserialize<'de> for Parameters {
 impl TryFrom<Vec<Parameter>> for Parameters {
     type Error = FromParametersError;
 
-    /// Tries to convert a list of parameters into a [`Parameters`] struct, returning an error if
+    /// Attempts to convert a list of parameters into a [`Parameters`] struct, returning an error if
     /// the parameters do not follow the rules for valid function parameters in Python.
     ///
     /// # Errors
@@ -1399,7 +1435,7 @@ impl<'de> Deserialize<'de> for ModuleAttributes {
 impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
     type Error = FromModuleAttributesError;
 
-    /// Tries to convert a map of attributes into a [`ModuleAttributes`] struct, returning an error if
+    /// Attempts to convert a map of attributes into a [`ModuleAttributes`] struct, returning an error if
     /// any of the attributes have a subclass visibility that should not be used in a module.
     ///
     /// # Errors
