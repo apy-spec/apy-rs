@@ -35,9 +35,9 @@ use thiserror::Error;
 use unicode_ident::{is_xid_continue, is_xid_start};
 use unicode_normalization::UnicodeNormalization;
 
-/// The error returned when trying to convert an invalid Python identifier to an `Identifier`.
+/// The error returned when trying to convert an invalid Python identifier to an [`Identifier`].
 #[derive(Debug, Error)]
-#[error("Tried to convert an invalid Python identifier")]
+#[error("tried to convert an invalid Python identifier")]
 pub struct FromInvalidIdentifierError;
 
 /// A Python identifier, which is a name used to identify a variable, function, class, module,
@@ -57,12 +57,12 @@ pub struct Identifier {
 impl TryFrom<&str> for Identifier {
     type Error = FromInvalidIdentifierError;
 
-    /// Tries to convert a string into an `Identifier`, returning an error if the string is not
+    /// Tries to convert a string into an [`Identifier`], returning an error if the string is not
     /// a valid Python identifier.
     ///
     /// # Errors
     ///
-    /// Returns `FromInvalidIdentifierError` if the string is empty, is a Python keyword,
+    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword,
     /// or does not match the syntax of a valid Python identifier.
     ///
     /// # Examples
@@ -141,7 +141,7 @@ impl TryFrom<&str> for Identifier {
 }
 
 impl From<Identifier> for String {
-    /// Unwraps the `String` from the `Identifier`.
+    /// Unwraps the `String` from the [`Identifier`].
     ///
     /// # Examples
     ///
@@ -185,12 +185,12 @@ impl Display for Identifier {
     }
 }
 
-/// The error returned when trying to convert an invalid qualified name to a `QualifiedName`.
+/// The error returned when trying to convert an invalid qualified name to a [`QualifiedName`].
 #[derive(Debug, Error)]
 pub enum FromInvalidQualifiedNameError {
-    #[error("The qualified name contains an invalid identifier.")]
+    #[error("the qualified name contains an invalid identifier")]
     ContainInvalidIdentifier(#[from] FromInvalidIdentifierError),
-    #[error("The qualified name is empty.")]
+    #[error("the qualified name is empty")]
     IsEmptyQualifiedName(#[from] EmptyCollectionError),
 }
 
@@ -208,7 +208,7 @@ pub struct QualifiedName {
 }
 
 impl QualifiedName {
-    /// Creates a new `QualifiedName` with the given identifiers.
+    /// Creates a new [`QualifiedName`] with the given identifiers.
     ///
     /// # Examples
     ///
@@ -244,13 +244,13 @@ impl QualifiedName {
 impl TryFrom<&str> for QualifiedName {
     type Error = FromInvalidQualifiedNameError;
 
-    /// Tries to convert a `&str` into a `QualifiedName`, returning an error if any of the identifiers
+    /// Tries to convert a `&str` into a [`QualifiedName`], returning an error if any of the identifiers
     /// in the qualified name are invalid or if the qualified name is empty.
     ///
     /// # Errors
     ///
-    /// Returns `FromInvalidQualifiedNameError::ContainInvalidIdentifier` if any of the identifiers
-    /// in the qualified name are invalid, or `FromInvalidQualifiedNameError::IsEmptyQualifiedName`
+    /// Returns [`FromInvalidQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`FromInvalidQualifiedNameError::IsEmptyQualifiedName`]
     /// if the qualified name is empty.
     ///
     /// # Examples
@@ -277,7 +277,7 @@ impl TryFrom<&str> for QualifiedName {
 }
 
 impl From<QualifiedName> for String {
-    /// Joins the `QualifiedName` into a `String`.
+    /// Joins the [`QualifiedName`] into a [`String`].
     ///
     /// # Examples
     ///
@@ -365,7 +365,7 @@ pub struct Type {
     pub id: QualifiedName,
 
     /// The module where the type is defined.
-    /// It can be `None` if the type is defined in the same module as the attribute that references it,
+    /// It can be [`None`] if the type is defined in the same module as the attribute that references it,
     /// or if it is a built-in type.
     #[serde(default)]
     pub module: Option<QualifiedName>,
@@ -383,7 +383,7 @@ pub struct Type {
 }
 
 impl Type {
-    /// Creates a new `Type` with the given qualified name and default values for the other fields.
+    /// Creates a new [`Type`] with the given qualified name and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -440,7 +440,7 @@ pub enum Visibility {
 }
 
 impl Default for Visibility {
-    /// Returns the default visibility, which is `Public`.
+    /// Returns the default visibility, which is [`Public`](Visibility::Public).
     fn default() -> Self {
         Visibility::Public
     }
@@ -502,7 +502,7 @@ pub struct Parameter {
 }
 
 impl Parameter {
-    /// Creates a new `Parameter` with the given name, kind, and type, and default values for the other fields.
+    /// Creates a new [`Parameter`] with the given name, kind, and type, and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -542,32 +542,32 @@ impl Parameter {
     }
 }
 
-/// The error returned when trying to convert a list of parameters into a `Parameters` struct.
+/// The error returned when trying to convert a list of parameters into a [`Parameters`] struct.
 #[derive(Debug, Error)]
 pub enum FromParametersError {
     #[error(
-        "The parameters are in an invalid order in regards to their kinds.
-        The order should be: positional-only, positional-or-keyword, var-positional, keyword-only, var-keyword."
+        "the parameters are in an invalid order in regards to their kinds. \
+        The order should be: positional-only, positional-or-keyword, var-positional, keyword-only, var-keyword"
     )]
     IsInvalidOrder { parameters: Vec<Parameter> },
-    #[error("Multiple parameters exist with the name {parameter_name}")]
+    #[error("multiple parameters exist with the name {parameter_name}")]
     ContainMultipleParametersWithSameName {
         parameter_name: Identifier,
         parameters: Vec<Parameter>,
     },
-    #[error("Multiple var-positional parameters exist, but only one is allowed.")]
+    #[error("multiple var-positional parameters exist, but only one is allowed")]
     ContainMultipleVarPositionalParameters { parameters: Vec<Parameter> },
-    #[error("Multiple var-keyword parameters exist, but only one is allowed.")]
+    #[error("multiple var-keyword parameters exist, but only one is allowed")]
     ContainMultipleVarKeywordParameters { parameters: Vec<Parameter> },
     #[error(
-        "The parameter {parameter_name} is a var-positional parameter that should always be optional."
+        "the parameter {parameter_name} is a var-positional parameter that should always be optional"
     )]
     HasNonOptionalVarPositional {
         parameter_name: Identifier,
         parameters: Vec<Parameter>,
     },
     #[error(
-        "The parameter {parameter_name} is a var-keyword parameter that should always be optional."
+        "the parameter {parameter_name} is a var-keyword parameter that should always be optional"
     )]
     HasNonOptionalVarKeyword {
         parameter_name: Identifier,
@@ -584,7 +584,7 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    /// Creates a new `Parameters` struct with an empty list of parameters.
+    /// Creates a new [`Parameters`] struct with an empty list of parameters.
     pub fn new() -> Self {
         Self::default()
     }
@@ -603,12 +603,12 @@ impl<'de> Deserialize<'de> for Parameters {
 impl TryFrom<Vec<Parameter>> for Parameters {
     type Error = FromParametersError;
 
-    /// Tries to convert a list of parameters into a `Parameters` struct, returning an error if
+    /// Tries to convert a list of parameters into a [`Parameters`] struct, returning an error if
     /// the parameters do not follow the rules for valid function parameters in Python.
     ///
     /// # Errors
     ///
-    /// Returns `FromParametersError` if the list does not follow the rules for
+    /// Returns [`FromParametersError`] if the list does not follow the rules for
     /// valid function parameters in Python.
     ///
     /// # Examples
@@ -697,7 +697,7 @@ impl TryFrom<Vec<Parameter>> for Parameters {
 }
 
 impl From<Parameters> for Vec<Parameter> {
-    /// Unwraps the `Vec<Parameter>` from the `Parameters`.
+    /// Unwraps the [`Vec<Parameter>`] from the [`Parameters`].
     ///
     /// # Examples
     ///
@@ -806,7 +806,7 @@ pub struct Generic {
 }
 
 impl Generic {
-    /// Creates a new `Generic` with the given kind and default values for the other fields.
+    /// Creates a new [`Generic`] with the given kind and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -854,7 +854,7 @@ pub struct Exception {
 }
 
 impl Exception {
-    /// Creates a new `Exception` with the given type and default values for the other fields.
+    /// Creates a new [`Exception`] with the given type and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -919,7 +919,7 @@ pub struct Signature {
 }
 
 impl Signature {
-    /// Creates a new `Signature` with the given return type and default values for the other fields.
+    /// Creates a new [`Signature`] with the given return type and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -985,7 +985,7 @@ pub struct Function {
 }
 
 impl Function {
-    /// Creates a new `Function` with the given signature and default values for the other fields.
+    /// Creates a new [`Function`] with the given signature and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -1055,7 +1055,7 @@ pub struct Variable {
 }
 
 impl Variable {
-    /// Creates a new `Variable` with the given type and default values for the other fields.
+    /// Creates a new [`Variable`] with the given type and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -1121,7 +1121,7 @@ pub struct TypeAlias {
 }
 
 impl TypeAlias {
-    /// Creates a new `TypeAlias` with the given alias and default values for the other fields.
+    /// Creates a new [`TypeAlias`] with the given alias and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -1202,7 +1202,7 @@ pub struct Class {
 }
 
 impl Class {
-    /// Creates a new `Class` with default values for all fields.
+    /// Creates a new [`Class`] with default values for all fields.
     ///
     /// # Examples
     ///
@@ -1248,7 +1248,7 @@ pub struct ImportedModule {
 }
 
 impl ImportedModule {
-    /// Creates a new `ImportedModule` with the given module and default values for the other fields.
+    /// Creates a new [`ImportedModule`] with the given module and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -1297,7 +1297,7 @@ pub struct ImportedAttribute {
 }
 
 impl ImportedAttribute {
-    /// Creates a new `ImportedModuleAttribute` with the given attribute and module, and default values for the other fields.
+    /// Creates a new [`ImportedAttribute`] with the given attribute and module, and default values for the other fields.
     ///
     /// # Examples
     ///
@@ -1359,10 +1359,10 @@ pub enum Attribute {
     ImportedAttribute(ImportedAttribute),
 }
 
-/// The error returned when trying to convert a map of attributes into a `ModuleAttributes` struct.
+/// The error returned when trying to convert a map of attributes into a [`ModuleAttributes`] struct.
 #[derive(Debug, Error)]
 pub enum FromModuleAttributesError {
-    #[error("An attribute has a subclass visibility that should not be used in a module.")]
+    #[error("an attribute has a subclass visibility that should not be used in a module")]
     ContainSubclassVisibilityAttribute {
         attributes: BTreeMap<Identifier, OneOrMany<Attribute>>,
     },
@@ -1378,7 +1378,7 @@ pub struct ModuleAttributes {
 }
 
 impl ModuleAttributes {
-    /// Creates a new `ModuleAttributes` struct with an empty map of attributes.
+    /// Creates a new [`ModuleAttributes`] struct with an empty map of attributes.
     pub fn new() -> Self {
         Self::default()
     }
@@ -1399,12 +1399,12 @@ impl<'de> Deserialize<'de> for ModuleAttributes {
 impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
     type Error = FromModuleAttributesError;
 
-    /// Tries to convert a map of attributes into a `ModuleAttributes` struct, returning an error if
+    /// Tries to convert a map of attributes into a [`ModuleAttributes`] struct, returning an error if
     /// any of the attributes have a subclass visibility that should not be used in a module.
     ///
     /// # Errors
     ///
-    /// Returns `FromModuleAttributesError` if any of the attributes have a subclass visibility that
+    /// Returns [`FromModuleAttributesError`] if any of the attributes have a subclass visibility that
     /// should not be used in a module.
     ///
     /// # Examples
@@ -1461,7 +1461,7 @@ impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
 }
 
 impl From<ModuleAttributes> for BTreeMap<Identifier, OneOrMany<Attribute>> {
-    /// Unwraps the `BTreeMap<Identifier, OneOrMany<Attribute>>` from the `ModuleAttributes`.
+    /// Unwraps the [`BTreeMap<Identifier,OneOrMany<Attribute>>`] from the [`ModuleAttributes`].
     ///
     /// # Examples
     ///
@@ -1536,7 +1536,7 @@ pub struct Module {
 }
 
 impl Module {
-    /// Creates a new `Module` with default values for all fields.
+    /// Creates a new [`Module`] with default values for all fields.
     ///
     /// # Examples
     ///
@@ -1575,7 +1575,7 @@ pub struct ApyV1 {
 }
 
 impl ApyV1 {
-    /// Creates a new `ApyV1` with an empty list of modules and extensions.
+    /// Creates a new [`ApyV1`] with an empty list of modules and extensions.
     ///
     /// # Examples
     ///

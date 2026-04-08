@@ -17,14 +17,14 @@ pub(crate) fn default_true() -> bool {
     true
 }
 
-const EXPECT_SELF_NON_EMPTY_MESSAGE: &str = "Self should never be empty";
+const EXPECT_SELF_NON_EMPTY_MESSAGE: &str = "invariant: elements is non-empty";
 
 /// The error returned when attempting to create a [`OneOrMany`] from an empty collection or iterator.
 #[derive(Debug, Error)]
 #[error("cannot create OneOrMany from an empty collection")]
 pub struct EmptyCollectionError;
 
-/// A wrapper type that can hold either a single value of type `T` or multiple values of type `T`.
+/// A wrapper type that can hold either a single value of type [`T`] or multiple values of type [`T`].
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct OneOrMany<T> {
     // Invariant: elements should never be empty
@@ -32,7 +32,7 @@ pub struct OneOrMany<T> {
 }
 
 impl<T> OneOrMany<T> {
-    /// Creates a new `OneOrMany` instance containing a single value.
+    /// Creates a new [`OneOrMany`] instance containing a single value.
     ///
     /// # Examples
     ///
@@ -56,7 +56,7 @@ impl<T> OneOrMany<T> {
         }
     }
 
-    /// Creates a new `OneOrMany` instance containing multiple values.
+    /// Creates a new [`OneOrMany`] instance containing multiple values.
     ///
     /// # Panics
     ///
@@ -76,11 +76,11 @@ impl<T> OneOrMany<T> {
         Self::try_many(elements).expect("`elements` must not be empty")
     }
 
-    /// Attempts to create a new `OneOrMany` instance containing multiple values. Returns an error if the provided vector is empty.
+    /// Attempts to create a new [`OneOrMany`] instance containing multiple values. Returns an error if the provided vector is empty.
     ///
     /// # Errors
     ///
-    /// Returns a `FromEmptyIteratorError` if the provided `elements` vector is empty.
+    /// Returns an [`EmptyCollectionError`] if the provided `elements` vector is empty.
     ///
     /// # Examples
     ///
@@ -106,11 +106,11 @@ impl<T> OneOrMany<T> {
         }
     }
 
-    /// Attempts to create a new `OneOrMany` instance from an iterator. Returns an error if the iterator is empty.
+    /// Attempts to create a new [`OneOrMany`] instance from an iterator. Returns an error if the iterator is empty.
     ///
     /// # Errors
     ///
-    /// Returns a `FromEmptyIteratorError` if the provided iterator is empty.
+    /// Returns an [`EmptyCollectionError`] if the provided iterator is empty.
     ///
     /// # Examples
     ///
@@ -132,22 +132,22 @@ impl<T> OneOrMany<T> {
         Self::try_many(Vec::from_iter(iter))
     }
 
-    /// Returns a reference to the first element in the `OneOrMany` instance.
+    /// Returns a reference to the first element in the [`OneOrMany`] instance.
     pub fn first(&self) -> &T {
         self.elements.first().expect(EXPECT_SELF_NON_EMPTY_MESSAGE)
     }
 
-    /// Returns a reference to the last element in the `OneOrMany` instance.
+    /// Returns a reference to the last element in the [`OneOrMany`] instance.
     pub fn last(&self) -> &T {
         self.elements.last().expect(EXPECT_SELF_NON_EMPTY_MESSAGE)
     }
 
-    /// Returns the number of elements in the `OneOrMany` instance.
+    /// Returns the number of elements in the [`OneOrMany`] instance.
     pub fn len(&self) -> usize {
         self.elements.len()
     }
 
-    /// Adds a value to the `OneOrMany` instance.
+    /// Adds a value to the [`OneOrMany`] instance.
     ///
     /// # Examples
     ///
@@ -163,7 +163,7 @@ impl<T> OneOrMany<T> {
         self.elements.push(value);
     }
 
-    /// Extends the `OneOrMany` instance with values from an iterator.
+    /// Extends the [`OneOrMany`] instance with values from an iterator.
     ///
     /// # Examples
     ///
@@ -179,8 +179,8 @@ impl<T> OneOrMany<T> {
         self.elements.extend(iter);
     }
 
-    /// Removes the last element from the `OneOrMany` instance and returns it, if there is
-    /// more than one element. Returns `None` if there is only one element.
+    /// Removes the last element from the [`OneOrMany`] instance and returns it, if there is
+    /// more than one element. Returns [`None`] if there is only one element.
     ///
     /// # Examples
     ///
@@ -280,7 +280,7 @@ impl<T: JsonSchema> JsonSchema for OneOrMany<T> {
 }
 
 impl<T> From<T> for OneOrMany<T> {
-    /// Converts a single value of type `T` into a `OneOrMany<T>` instance containing that value.
+    /// Converts a single value of type [`T`] into a [`OneOrMany<T>`] instance containing that value.
     ///
     /// # Examples
     ///
@@ -303,11 +303,11 @@ impl<T> From<T> for OneOrMany<T> {
 impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
     type Error = EmptyCollectionError;
 
-    /// Attempts to convert a `Vec<T>` into a `OneOrMany<T>` instance. Returns an error if the vector is empty.
+    /// Attempts to convert a [`Vec<T>`] into a [`OneOrMany<T>`] instance. Returns an error if the vector is empty.
     ///
     /// # Errors
     ///
-    /// Returns a `FromEmptyIteratorError` if the provided vector is empty.
+    /// Returns an [`EmptyCollectionError`] if the provided vector is empty.
     ///
     /// # Examples
     ///
@@ -329,7 +329,7 @@ impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
 }
 
 impl<T> From<OneOrMany<T>> for Vec<T> {
-    /// Unwraps the `Vec<T>` from the `OneOrMany<T>`.
+    /// Unwraps the [`Vec<T>`] from the [`OneOrMany<T>`].
     ///
     /// # Examples
     ///
@@ -373,7 +373,7 @@ impl<T> IntoIterator for OneOrMany<T> {
     }
 }
 
-/// Constructs a `OneOrMany<T>` from one or more expressions.
+/// Constructs a [`OneOrMany<T>`] from one or more expressions.
 ///
 /// Calling this macro without any arguments will result in a compile-time error.
 ///
@@ -411,7 +411,7 @@ macro_rules! one_or_many {
 pub mod v1;
 
 #[derive(Debug, Serialize, Deserialize, Error)]
-#[error("Failed to parse APY: {0}")]
+#[error("failed to parse APY: {0}")]
 pub struct ParseApyError(String);
 
 impl From<serde_json::Error> for ParseApyError {
@@ -428,7 +428,7 @@ impl From<serde_saphyr::Error> for ParseApyError {
 }
 
 #[derive(Debug, Serialize, Deserialize, Error)]
-#[error("Failed to dump APY: {0}")]
+#[error("failed to dump APY: {0}")]
 pub struct DumpApyError(String);
 
 impl From<serde_json::Error> for DumpApyError {
@@ -455,83 +455,83 @@ pub enum Apy {
 }
 
 impl Apy {
-    /// Parses an `Apy` from a JSON string.
+    /// Parses an [`Apy`] from a JSON string.
     ///
     /// # Errors
     ///
-    /// Returns a `ParseApyError` if the provided string is not valid JSON or does not conform to the expected APY structure.
+    /// Returns a [`ParseApyError`] if the provided string is not valid JSON or does not conform to the expected APY structure.
     pub fn from_json_str(json_str: &str) -> Result<Self, ParseApyError> {
         serde_json::from_str(json_str)?
     }
 
-    /// Parses an `Apy` from a reader containing JSON data.
+    /// Parses an [`Apy`] from a reader containing JSON data.
     ///
     /// # Errors
     ///
-    /// Returns a `ParseApyError` if the provided reader contains invalid JSON or does not conform to the expected APY structure.
+    /// Returns a [`ParseApyError`] if the provided reader contains invalid JSON or does not conform to the expected APY structure.
     pub fn from_json_reader(reader: impl std::io::Read) -> Result<Self, ParseApyError> {
         serde_json::from_reader(reader)?
     }
 
-    /// Dumps the `Apy` instance to a JSON string.
+    /// Dumps the [`Apy`] instance to a JSON string.
     ///
     /// # Errors
     ///
-    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to JSON.
+    /// Returns a [`DumpApyError`] if the [`Apy`] instance cannot be serialized to JSON.
     pub fn to_json_string(&self) -> Result<String, DumpApyError> {
         Ok(serde_json::to_string_pretty(self)?)
     }
 
-    /// Dumps the `Apy` instance to a writer as JSON.
+    /// Dumps the [`Apy`] instance to a writer as JSON.
     ///
     /// # Errors
     ///
-    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to JSON or if there is an I/O error while writing to the provided writer.
+    /// Returns a [`DumpApyError`] if the [`Apy`] instance cannot be serialized to JSON or if there is an I/O error while writing to the provided writer.
     pub fn to_json_writer(&self, writer: impl std::io::Write) -> Result<(), DumpApyError> {
         Ok(serde_json::to_writer_pretty(writer, self)?)
     }
 
-    /// Parses an `Apy` from a YAML string.
+    /// Parses an [`Apy`] from a YAML string.
     ///
     /// # Errors
     ///
-    /// Returns a `ParseApyError` if the provided string is not valid YAML or does not conform to the expected APY structure.
+    /// Returns a [`ParseApyError`] if the provided string is not valid YAML or does not conform to the expected APY structure.
     #[cfg(feature = "yaml")]
     pub fn from_yaml_str(yaml_str: &str) -> Result<Self, ParseApyError> {
         serde_saphyr::from_str(yaml_str)?
     }
 
-    /// Parses an `Apy` from a reader containing YAML data.
+    /// Parses an [`Apy`] from a reader containing YAML data.
     ///
     /// # Errors
     ///
-    /// Returns a `ParseApyError` if the provided reader contains invalid YAML or does not conform to the expected APY structure.
+    /// Returns a [`ParseApyError`] if the provided reader contains invalid YAML or does not conform to the expected APY structure.
     #[cfg(feature = "yaml")]
     pub fn from_yaml_reader(reader: impl std::io::Read) -> Result<Self, ParseApyError> {
         serde_saphyr::from_reader(reader)?
     }
 
-    /// Dumps the `Apy` instance to a YAML string.
+    /// Dumps the [`Apy`] instance to a YAML string.
     ///
     /// # Errors
     ///
-    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to YAML.
+    /// Returns a [`DumpApyError`] if the [`Apy`] instance cannot be serialized to YAML.
     #[cfg(feature = "yaml")]
     pub fn to_yaml_string(&self) -> Result<String, DumpApyError> {
         Ok(serde_saphyr::to_string(self)?)
     }
 
-    /// Dumps the `Apy` instance to a writer as YAML.
+    /// Dumps the [`Apy`] instance to a writer as YAML.
     ///
     /// # Errors
     ///
-    /// Returns a `DumpApyError` if the `Apy` instance cannot be serialized to YAML or if there is an I/O error while writing to the provided writer.
+    /// Returns a [`DumpApyError`] if the [`Apy`] instance cannot be serialized to YAML or if there is an I/O error while writing to the provided writer.
     #[cfg(feature = "yaml")]
     pub fn to_yaml_writer(&self, writer: &mut impl std::io::Write) -> Result<(), DumpApyError> {
         Ok(serde_saphyr::to_io_writer(writer, self)?)
     }
 
-    /// Returns the version of the APY format represented by this `Apy` instance.
+    /// Returns the version of the APY format represented by this [`Apy`] instance.
     pub fn version(&self) -> &str {
         match self {
             Apy::V1(_) => "1.0.0",
