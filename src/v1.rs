@@ -73,7 +73,7 @@ impl Identifier {
     /// assert_eq!(identifier.as_ref(), "valid_identifier");
     /// ```
     pub fn parse(name: &str) -> Self {
-        Self::try_parse(name).expect("name is not a valid Python identifier")
+        Self::try_parse(name).expect("`name` is not a valid Python identifier")
     }
 
     /// Attempts to parse a string into an [`Identifier`], returning an error if the string is not a
@@ -81,11 +81,20 @@ impl Identifier {
     ///
     /// # Errors
     ///
-    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword, or does
-    /// not match the syntax of a valid Python identifier.
+    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword,
+    /// or does not match the syntax of a valid Python identifier.
     ///
     /// # Examples
     ///
+    /// ```rust
+    /// use apy::v1::Identifier;
+    ///
+    /// assert!(Identifier::try_from("valid_identifier").is_ok());
+    ///
+    /// assert!(Identifier::try_from("").is_err());
+    /// assert!(Identifier::try_from("for").is_err());
+    /// assert!(Identifier::try_from("1invalid").is_err());
+    /// ```
     pub fn try_parse(name: &str) -> Result<Self, ParseIdentifierError> {
         let normalized_name = name.nfkc().collect::<String>();
 
@@ -158,24 +167,8 @@ impl FromStr for Identifier {
     ///
     /// # Errors
     ///
-    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword, or does
-    /// not match the syntax of a valid Python identifier.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use std::str::FromStr;
-    /// use apy::v1::Identifier;
-    ///
-    /// let identifier = Identifier::from_str("valid_identifier")?;
-    ///
-    /// assert_eq!(identifier.as_ref(), "valid_identifier");
-    /// #
-    /// #     Ok(())
-    /// # }
+    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword,
+    /// or does not match the syntax of a valid Python identifier.
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::try_parse(s)
@@ -192,18 +185,6 @@ impl TryFrom<&str> for Identifier {
     ///
     /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword,
     /// or does not match the syntax of a valid Python identifier.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use apy::v1::Identifier;
-    ///
-    /// assert!(Identifier::try_from("valid_identifier").is_ok());
-    ///
-    /// assert!(Identifier::try_from("").is_err());
-    /// assert!(Identifier::try_from("for").is_err());
-    /// assert!(Identifier::try_from("1invalid").is_err());
-    /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Self::try_parse(value)
     }
