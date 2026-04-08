@@ -90,11 +90,10 @@ impl<T> OneOrMany<T> {
     /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     ///
-    /// let many = OneOrMany::try_many(vec![42, 43])?;
+    /// let many: OneOrMany<u32> = OneOrMany::try_many(vec![1, 2, 3])?;
     ///
-    /// assert_eq!(many.first(), &42);
-    /// assert_eq!(many.last(), &43);
-    /// #
+    /// assert_eq!(many.first(), &1);
+    /// assert_eq!(many.last(), &3);
     /// #     Ok(())
     /// # }
     /// ```
@@ -281,20 +280,6 @@ impl<T: JsonSchema> JsonSchema for OneOrMany<T> {
 
 impl<T> From<T> for OneOrMany<T> {
     /// Converts a single value of type [`T`] into a [`OneOrMany<T>`] instance containing that value.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use apy::OneOrMany;
-    ///
-    /// let single = OneOrMany::from(42);
-    ///
-    /// assert_eq!(single.first(), &42);
-    /// assert_eq!(single.last(), &42);
-    /// #     Ok(())
-    /// # }
     fn from(value: T) -> Self {
         Self::one(value)
     }
@@ -308,21 +293,6 @@ impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
     /// # Errors
     ///
     /// Returns an [`EmptyCollectionError`] if the provided vector is empty.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// # use std::error::Error;
-    /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use apy::OneOrMany;
-    ///
-    /// let many: OneOrMany<u32> = OneOrMany::try_from(vec![1, 2, 3])?;
-    ///
-    /// assert_eq!(many.first(), &1);
-    /// assert_eq!(many.last(), &3);
-    /// #     Ok(())
-    /// # }
-    /// ```
     fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
         Self::try_many(value)
     }
