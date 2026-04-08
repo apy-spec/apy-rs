@@ -81,7 +81,7 @@ fn main() {
     match args.command {
         #[cfg(feature = "schemars")]
         Commands::JsonSchema { output_path } => {
-            let schema = schemars::schema_for!(apy::Apy);
+            let schema = schemars::schema_for!(Apy);
 
             let write_result = match output_path {
                 Some(path) => match File::create(&path) {
