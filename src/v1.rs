@@ -511,6 +511,36 @@ impl Type {
             extensions: BTreeMap::new(),
         }
     }
+
+    /// Sets the id of the type and returns the modified [`Type`].
+    pub fn with_id(mut self, id: QualifiedName) -> Self {
+        self.id = id;
+        self
+    }
+
+    /// Sets the module of the type and returns the modified [`Type`].
+    pub fn with_module(mut self, module: QualifiedName) -> Self {
+        self.module = Some(module);
+        self
+    }
+
+    /// Sets the history index of the type and returns the modified [`Type`].
+    pub fn with_history_index(mut self, history_index: usize) -> Self {
+        self.history_index = history_index;
+        self
+    }
+
+    /// Sets the arguments of the type and returns the modified [`Type`].
+    pub fn with_arguments(mut self, arguments: Vec<TypeArgument>) -> Self {
+        self.arguments = arguments;
+        self
+    }
+
+    /// Sets the extensions of the type and returns the modified [`Type`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// The visibility of a module, class, function, or other item in Python.
@@ -637,6 +667,48 @@ impl Parameter {
             is_deprecated: false,
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the name of the parameter and returns the modified [`Parameter`].
+    pub fn with_name(mut self, name: Identifier) -> Self {
+        self.name = name;
+        self
+    }
+
+    /// Sets the kind of the parameter and returns the modified [`Parameter`].
+    pub fn with_kind(mut self, kind: ParameterKind) -> Self {
+        self.kind = kind;
+        self
+    }
+
+    /// Sets the type of the parameter and returns the modified [`Parameter`].
+    pub fn with_parameter_type(mut self, parameter_type: Type) -> Self {
+        self.parameter_type = parameter_type;
+        self
+    }
+
+    /// Sets the description of the parameter and returns the modified [`Parameter`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets whether the parameter is optional and returns the modified [`Parameter`].
+    pub fn with_optional(mut self, is_optional: bool) -> Self {
+        self.is_optional = is_optional;
+        self
+    }
+
+    /// Sets whether the parameter is deprecated and returns the modified [`Parameter`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the extensions of the parameter and returns the modified [`Parameter`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -936,6 +1008,60 @@ impl Generic {
             extensions: BTreeMap::new(),
         }
     }
+
+    /// Sets the kind of the generic and returns the modified [`Generic`].
+    pub fn with_kind(mut self, kind: GenericKind) -> Self {
+        self.kind = kind;
+        self
+    }
+
+    /// Sets the bound of the generic and returns the modified [`Generic`].
+    pub fn with_bound(mut self, bound: Type) -> Self {
+        self.bound = Some(bound);
+        self
+    }
+
+    /// Sets the constraints of the generic and returns the modified [`Generic`].
+    pub fn with_constraints(mut self, constraints: Vec<Type>) -> Self {
+        self.constraints = constraints;
+        self
+    }
+
+    /// Sets the default type of the generic and returns the modified [`Generic`].
+    pub fn with_default(mut self, default: Type) -> Self {
+        self.default = Some(default);
+        self
+    }
+
+    /// Sets whether the generic is covariant and returns the modified [`Generic`].
+    pub fn with_covariant(mut self, is_covariant: bool) -> Self {
+        self.is_covariant = is_covariant;
+        self
+    }
+
+    /// Sets whether the generic is contravariant and returns the modified [`Generic`].
+    pub fn with_contravariant(mut self, is_contravariant: bool) -> Self {
+        self.is_contravariant = is_contravariant;
+        self
+    }
+
+    /// Sets whether the generic is deprecated and returns the modified [`Generic`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the generic and returns the modified [`Generic`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the generic and returns the modified [`Generic`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// An exception that can be raised.
@@ -976,6 +1102,24 @@ impl Exception {
             description: String::new(),
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the type of the exception and returns the modified [`Exception`].
+    pub fn with_exception_type(mut self, exception_type: Type) -> Self {
+        self.exception_type = exception_type;
+        self
+    }
+
+    /// Sets the description of the exception and returns the modified [`Exception`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets the extensions of the exception and returns the modified [`Exception`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -1058,6 +1202,72 @@ impl Signature {
             extensions: BTreeMap::new(),
         }
     }
+
+    /// Sets the return type of the signature and returns the modified [`Signature`].
+    pub fn with_return_type(mut self, return_type: Type) -> Self {
+        self.return_type = return_type;
+        self
+    }
+
+    /// Sets the summary of the signature and returns the modified [`Signature`].
+    pub fn with_summary(mut self, summary: String) -> Self {
+        self.summary = summary;
+        self
+    }
+
+    /// Sets the description of the signature and returns the modified [`Signature`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets the generics of the signature and returns the modified [`Signature`].
+    pub fn with_generics(mut self, generics: BTreeMap<String, Generic>) -> Self {
+        self.generics = generics;
+        self
+    }
+
+    /// Sets the parameters of the signature and returns the modified [`Signature`].
+    pub fn with_parameters(mut self, parameters: Parameters) -> Self {
+        self.parameters = parameters;
+        self
+    }
+
+    /// Sets the exceptions that can be raised by the signature and returns the modified [`Signature`].
+    pub fn with_raises(mut self, raises: Vec<Exception>) -> Self {
+        self.raises = raises;
+        self
+    }
+
+    /// Sets whether the signature is partial and returns the modified [`Signature`].
+    pub fn with_partial(mut self, is_partial: bool) -> Self {
+        self.is_partial = is_partial;
+        self
+    }
+
+    /// Sets whether the signature is pure and returns the modified [`Signature`].
+    pub fn with_pure(mut self, is_pure: bool) -> Self {
+        self.is_pure = is_pure;
+        self
+    }
+
+    /// Sets whether the signature is deprecated and returns the modified [`Signature`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the signature and returns the modified [`Signature`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the signature and returns the modified [`Signature`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// A function or method, which can have multiple signatures due to function overloading.
@@ -1115,6 +1325,42 @@ impl Function {
             is_final: false,
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the signature of the function and returns the modified [`Function`].
+    pub fn with_signature(mut self, signature: OneOrMany<Signature>) -> Self {
+        self.signature = signature;
+        self
+    }
+
+    /// Sets whether the function is asynchronous and returns the modified [`Function`].
+    pub fn with_async(mut self, is_async: bool) -> Self {
+        self.is_async = is_async;
+        self
+    }
+
+    /// Sets whether the function is overriding another function and returns the modified [`Function`].
+    pub fn with_overriding(mut self, is_overriding: bool) -> Self {
+        self.is_overriding = is_overriding;
+        self
+    }
+
+    /// Sets whether the function is abstract and returns the modified [`Function`].
+    pub fn with_abstract(mut self, is_abstract: bool) -> Self {
+        self.is_abstract = is_abstract;
+        self
+    }
+
+    /// Sets whether the function is final and returns the modified [`Function`].
+    pub fn with_final(mut self, is_final: bool) -> Self {
+        self.is_final = is_final;
+        self
+    }
+
+    /// Sets the extensions of the function and returns the modified [`Function`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -1188,6 +1434,54 @@ impl Variable {
             extensions: BTreeMap::new(),
         }
     }
+
+    /// Sets the type of the variable and returns the modified [`Variable`].
+    pub fn with_variable_type(mut self, variable_type: Type) -> Self {
+        self.variable_type = variable_type;
+        self
+    }
+
+    /// Sets the description of the variable and returns the modified [`Variable`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets whether the variable is initialised and returns the modified [`Variable`].
+    pub fn with_initialised(mut self, is_initialised: bool) -> Self {
+        self.is_initialised = is_initialised;
+        self
+    }
+
+    /// Sets whether the variable is readonly and returns the modified [`Variable`].
+    pub fn with_readonly(mut self, is_readonly: bool) -> Self {
+        self.is_readonly = is_readonly;
+        self
+    }
+
+    /// Sets whether the variable is final and returns the modified [`Variable`].
+    pub fn with_final(mut self, is_final: bool) -> Self {
+        self.is_final = is_final;
+        self
+    }
+
+    /// Sets whether the variable is deprecated and returns the modified [`Variable`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the variable and returns the modified [`Variable`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the variable and returns the modified [`Variable`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// A type alias, which is a name that refers to a type.
@@ -1249,6 +1543,42 @@ impl TypeAlias {
             visibility: Visibility::Public,
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the alias of the type alias and returns the modified [`TypeAlias`].
+    pub fn with_alias(mut self, alias: Type) -> Self {
+        self.alias = alias;
+        self
+    }
+
+    /// Sets the description of the type alias and returns the modified [`TypeAlias`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets the generics of the type alias and returns the modified [`TypeAlias`].
+    pub fn with_generics(mut self, generics: BTreeMap<String, Generic>) -> Self {
+        self.generics = generics;
+        self
+    }
+
+    /// Sets whether the type alias is deprecated and returns the modified [`TypeAlias`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the type alias and returns the modified [`TypeAlias`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the type alias and returns the modified [`TypeAlias`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -1327,6 +1657,99 @@ impl Class {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Sets the summary of the class and returns the modified [`Class`].
+    pub fn with_summary(mut self, summary: String) -> Self {
+        self.summary = summary;
+        self
+    }
+
+    /// Sets the description of the class and returns the modified [`Class`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets the generics of the class and returns the modified [`Class`].
+    pub fn with_generics(mut self, generics: BTreeMap<String, Generic>) -> Self {
+        self.generics = generics;
+        self
+    }
+
+    /// Sets the base classes of the class and returns the modified [`Class`].
+    pub fn with_bases(mut self, bases: Vec<Type>) -> Self {
+        self.bases = bases;
+        self
+    }
+
+    /// Sets the keyword arguments of the class and returns the modified [`Class`].
+    pub fn with_keyword_arguments(
+        mut self,
+        keyword_arguments: BTreeMap<String, PythonValue>,
+    ) -> Self {
+        self.keyword_arguments = keyword_arguments;
+        self
+    }
+
+    /// Sets the exceptions that can be raised by the class and returns the modified [`Class`].
+    pub fn with_raises(mut self, raises: Vec<Exception>) -> Self {
+        self.raises = raises;
+        self
+    }
+
+    /// Sets whether the class is partial and returns the modified [`Class`].
+    pub fn with_partial(mut self, is_partial: bool) -> Self {
+        self.is_partial = is_partial;
+        self
+    }
+
+    /// Sets whether the class is abstract and returns the modified [`Class`].
+    pub fn with_abstract(mut self, is_abstract: bool) -> Self {
+        self.is_abstract = is_abstract;
+        self
+    }
+
+    /// Sets whether the class is final and returns the modified [`Class`].
+    pub fn with_final(mut self, is_final: bool) -> Self {
+        self.is_final = is_final;
+        self
+    }
+
+    /// Sets whether the class is deprecated and returns the modified [`Class`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the class and returns the modified [`Class`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the attributes of the class and returns the modified [`Class`].
+    pub fn with_attributes(
+        mut self,
+        attributes: BTreeMap<Identifier, OneOrMany<Attribute>>,
+    ) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the typing attributes of the class and returns the modified [`Class`].
+    pub fn with_typing_attributes(
+        mut self,
+        typing_attributes: BTreeMap<Identifier, OneOrMany<Attribute>>,
+    ) -> Self {
+        self.typing_attributes = typing_attributes;
+        self
+    }
+
+    /// Sets the extensions of the class and returns the modified [`Class`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// An imported module, which is a reference to a module that is imported in the current namespace.
@@ -1372,6 +1795,30 @@ impl ImportedModule {
             visibility: Visibility::Public,
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the module of the imported module and returns the modified [`ImportedModule`].
+    pub fn with_module(mut self, module: QualifiedName) -> Self {
+        self.module = module;
+        self
+    }
+
+    /// Sets whether the imported module is deprecated and returns the modified [`ImportedModule`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the imported module and returns the modified [`ImportedModule`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the imported module and returns the modified [`ImportedModule`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -1426,6 +1873,36 @@ impl ImportedAttribute {
             visibility: Visibility::Public,
             extensions: BTreeMap::new(),
         }
+    }
+
+    /// Sets the attribute of the imported attribute and returns the modified [`ImportedAttribute`].
+    pub fn with_attribute(mut self, attribute: Identifier) -> Self {
+        self.attribute = attribute;
+        self
+    }
+
+    /// Sets the module of the imported attribute and returns the modified [`ImportedAttribute`].
+    pub fn with_module(mut self, module: QualifiedName) -> Self {
+        self.module = module;
+        self
+    }
+
+    /// Sets whether the imported attribute is deprecated and returns the modified [`ImportedAttribute`].
+    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
+        self.is_deprecated = is_deprecated;
+        self
+    }
+
+    /// Sets the visibility of the imported attribute and returns the modified [`ImportedAttribute`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the extensions of the imported attribute and returns the modified [`ImportedAttribute`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
 
@@ -1659,6 +2136,54 @@ impl Module {
             ..Self::default()
         }
     }
+
+    /// Sets the summary of the module and returns the modified [`Module`].
+    pub fn with_summary(mut self, summary: String) -> Self {
+        self.summary = summary;
+        self
+    }
+
+    /// Sets the description of the module and returns the modified [`Module`].
+    pub fn with_description(mut self, description: String) -> Self {
+        self.description = description;
+        self
+    }
+
+    /// Sets the exceptions that can be raised by the module and returns the modified [`Module`].
+    pub fn with_raises(mut self, raises: Vec<Exception>) -> Self {
+        self.raises = raises;
+        self
+    }
+
+    /// Sets whether the module is partial and returns the modified [`Module`].
+    pub fn with_partial(mut self, is_partial: bool) -> Self {
+        self.is_partial = is_partial;
+        self
+    }
+
+    /// Sets the visibility of the module and returns the modified [`Module`].
+    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = visibility;
+        self
+    }
+
+    /// Sets the attributes of the module and returns the modified [`Module`].
+    pub fn with_attributes(mut self, attributes: ModuleAttributes) -> Self {
+        self.attributes = attributes;
+        self
+    }
+
+    /// Sets the typing attributes of the module and returns the modified [`Module`].
+    pub fn with_typing_attributes(mut self, typing_attributes: ModuleAttributes) -> Self {
+        self.typing_attributes = typing_attributes;
+        self
+    }
+
+    /// Sets the extensions of the module and returns the modified [`Module`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
 }
 
 /// The APY v1 structure, which contains all the modules.
@@ -1687,5 +2212,17 @@ impl ApyV1 {
     /// ```
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Sets the modules of the APY v1 structure and returns the modified [`ApyV1`].
+    pub fn with_modules(mut self, modules: BTreeMap<QualifiedName, Module>) -> Self {
+        self.modules = modules;
+        self
+    }
+
+    /// Sets the extensions of the APY v1 structure and returns the modified [`ApyV1`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
     }
 }
