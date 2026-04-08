@@ -256,7 +256,7 @@ impl Display for Identifier {
 
 /// The error returned when trying to convert an invalid qualified name to a [`QualifiedName`].
 #[derive(Debug, Error)]
-pub enum FromInvalidQualifiedNameError {
+pub enum ParseQualifiedNameError {
     #[error("the qualified name contains an invalid identifier")]
     ContainInvalidIdentifier(#[from] ParseIdentifierError),
     #[error("the qualified name is empty")]
@@ -299,6 +299,57 @@ impl QualifiedName {
         Self { identifiers }
     }
 
+    /// Parses a string into a [`QualifiedName`].
+    ///
+    /// # Panics
+    ///
+    /// Panics if the string is empty or if any of the identifiers in the qualified name are
+    /// invalid.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::QualifiedName;
+    ///
+    /// let qualified_name = QualifiedName::parse("valid.qualified.name");
+    ///
+    /// assert_eq!(qualified_name.join(), "valid.qualified.name");
+    /// ```
+    pub fn parse(name: &str) -> Self {
+        Self::try_parse(name).expect("`name` is not a valid qualified name")
+    }
+
+    /// Attempts to parse a string into a [`QualifiedName`], returning an error if the string is empty or
+    /// if any of the identifiers in the qualified name are invalid.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
+    /// if the qualified name is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::QualifiedName;
+    ///
+    /// assert!(QualifiedName::try_parse("valid_qualified_name").is_ok());
+    /// assert!(QualifiedName::try_parse("valid.qualified.name").is_ok());
+    ///
+    /// assert!(QualifiedName::try_parse("invalid..qualified.name").is_err());
+    /// assert!(QualifiedName::try_parse("invalid.qualified.name.").is_err());
+    /// assert!(QualifiedName::try_parse(".invalid.qualified.name").is_err());
+    /// assert!(QualifiedName::try_parse("").is_err());
+    /// ```
+    pub fn try_parse(name: &str) -> Result<Self, ParseQualifiedNameError> {
+        let identifiers = name
+            .split('.')
+            .map(Identifier::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(Self::new(OneOrMany::try_many(identifiers)?))
+    }
+
     /// Joins the identifiers of the qualified name with dots to create a string representation
     /// of the qualified name.
     pub fn join(&self) -> String {
@@ -310,38 +361,35 @@ impl QualifiedName {
     }
 }
 
+impl FromStr for QualifiedName {
+    type Err = ParseQualifiedNameError;
+
+    /// Attempts to parse a string into a [`QualifiedName`], returning an error if the string is empty
+    /// or if any of the identifiers in the qualified name are invalid.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
+    /// if the qualified name is empty.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_parse(s)
+    }
+}
+
 impl TryFrom<&str> for QualifiedName {
-    type Error = FromInvalidQualifiedNameError;
+    type Error = ParseQualifiedNameError;
 
     /// Attempts to convert a `&str` into a [`QualifiedName`], returning an error if any of the identifiers
     /// in the qualified name are invalid or if the qualified name is empty.
     ///
     /// # Errors
     ///
-    /// Returns [`FromInvalidQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
-    /// in the qualified name are invalid, or [`FromInvalidQualifiedNameError::IsEmptyQualifiedName`]
+    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
     /// if the qualified name is empty.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use apy::v1::QualifiedName;
-    ///
-    /// assert!(QualifiedName::try_from("valid_qualified_name").is_ok());
-    /// assert!(QualifiedName::try_from("valid.qualified.name").is_ok());
-    ///
-    /// assert!(QualifiedName::try_from("invalid..qualified.name").is_err());
-    /// assert!(QualifiedName::try_from("invalid.qualified.name.").is_err());
-    /// assert!(QualifiedName::try_from(".invalid.qualified.name").is_err());
-    /// assert!(QualifiedName::try_from("").is_err());
-    /// ```
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(Self::new(OneOrMany::try_from(
-            value
-                .split('.')
-                .map(Identifier::try_from)
-                .collect::<Result<Vec<_>, _>>()?,
-        )?))
+        Self::try_parse(value)
     }
 }
 
