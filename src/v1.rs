@@ -31,14 +31,15 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Display;
 use std::ops::Deref;
+use std::str::FromStr;
 use thiserror::Error;
 use unicode_ident::{is_xid_continue, is_xid_start};
 use unicode_normalization::UnicodeNormalization;
 
-/// The error returned when trying to convert an invalid Python identifier to an [`Identifier`].
+/// The error returned when trying to parse an invalid Python identifier into an [`Identifier`].
 #[derive(Debug, Error)]
-#[error("tried to convert an invalid Python identifier")]
-pub struct FromInvalidIdentifierError;
+#[error("tried to parse an invalid Python identifier")]
+pub struct ParseIdentifierError;
 
 /// A Python identifier, which is a name used to identify a variable, function, class, module,
 /// or other object in Python.
@@ -80,12 +81,12 @@ impl Identifier {
     ///
     /// # Errors
     ///
-    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword, or does
+    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword, or does
     /// not match the syntax of a valid Python identifier.
     ///
     /// # Examples
     ///
-    pub fn try_parse(name: &str) -> Result<Self, FromInvalidIdentifierError> {
+    pub fn try_parse(name: &str) -> Result<Self, ParseIdentifierError> {
         let normalized_name = name.nfkc().collect::<String>();
 
         if normalized_name.is_empty()
@@ -128,7 +129,7 @@ impl Identifier {
                     | "yield"
             )
         {
-            return Err(FromInvalidIdentifierError);
+            return Err(ParseIdentifierError);
         }
 
         let mut chars = normalized_name.chars();
@@ -140,7 +141,7 @@ impl Identifier {
         };
 
         if !is_valid_identifier {
-            return Err(FromInvalidIdentifierError);
+            return Err(ParseIdentifierError);
         }
 
         Ok(Identifier {
@@ -149,15 +150,47 @@ impl Identifier {
     }
 }
 
+impl FromStr for Identifier {
+    type Err = ParseIdentifierError;
+
+    /// Attempts to parse a string into an [`Identifier`], returning an error if the string is not a
+    /// valid Python identifier.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword, or does
+    /// not match the syntax of a valid Python identifier.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use std::str::FromStr;
+    /// use apy::v1::Identifier;
+    ///
+    /// let identifier = Identifier::from_str("valid_identifier")?;
+    ///
+    /// assert_eq!(identifier.as_ref(), "valid_identifier");
+    /// #
+    /// #     Ok(())
+    /// # }
+    /// ```
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_parse(s)
+    }
+}
+
 impl TryFrom<&str> for Identifier {
-    type Error = FromInvalidIdentifierError;
+    type Error = ParseIdentifierError;
 
     /// Attempts to convert a string into an [`Identifier`], returning an error if the string is not
     /// a valid Python identifier.
     ///
     /// # Errors
     ///
-    /// Returns [`FromInvalidIdentifierError`] if the string is empty, is a Python keyword,
+    /// Returns [`ParseIdentifierError`] if the string is empty, is a Python keyword,
     /// or does not match the syntax of a valid Python identifier.
     ///
     /// # Examples
@@ -225,7 +258,7 @@ impl Display for Identifier {
 #[derive(Debug, Error)]
 pub enum FromInvalidQualifiedNameError {
     #[error("the qualified name contains an invalid identifier")]
-    ContainInvalidIdentifier(#[from] FromInvalidIdentifierError),
+    ContainInvalidIdentifier(#[from] ParseIdentifierError),
     #[error("the qualified name is empty")]
     IsEmptyQualifiedName(#[from] EmptyCollectionError),
 }
