@@ -519,8 +519,8 @@ impl Type {
     }
 
     /// Sets the module of the type and returns the modified [`Type`].
-    pub fn with_module(mut self, module: QualifiedName) -> Self {
-        self.module = Some(module);
+    pub fn with_module(mut self, module: Option<QualifiedName>) -> Self {
+        self.module = module;
         self
     }
 
@@ -1016,8 +1016,8 @@ impl Generic {
     }
 
     /// Sets the bound of the generic and returns the modified [`Generic`].
-    pub fn with_bound(mut self, bound: Type) -> Self {
-        self.bound = Some(bound);
+    pub fn with_bound(mut self, bound: Option<Type>) -> Self {
+        self.bound = bound;
         self
     }
 
@@ -1028,8 +1028,8 @@ impl Generic {
     }
 
     /// Sets the default type of the generic and returns the modified [`Generic`].
-    pub fn with_default(mut self, default: Type) -> Self {
-        self.default = Some(default);
+    pub fn with_default(mut self, default: Option<Type>) -> Self {
+        self.default = default;
         self
     }
 
