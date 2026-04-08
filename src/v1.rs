@@ -239,9 +239,9 @@ impl Display for Identifier {
 #[derive(Debug, Error)]
 pub enum ParseQualifiedNameError {
     #[error("the qualified name contains an invalid identifier")]
-    ContainInvalidIdentifier(#[from] ParseIdentifierError),
+    InvalidIdentifier(#[from] ParseIdentifierError),
     #[error("the qualified name is empty")]
-    IsEmptyQualifiedName(#[from] EmptyCollectionError),
+    Empty(#[from] EmptyCollectionError),
 }
 
 /// A qualified name, which is a dot-separated sequence of identifiers used to identify a module,
@@ -305,8 +305,8 @@ impl QualifiedName {
     ///
     /// # Errors
     ///
-    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
-    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
+    /// Returns [`ParseQualifiedNameError::InvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::Empty`]
     /// if the qualified name is empty.
     ///
     /// # Examples
@@ -350,8 +350,8 @@ impl FromStr for QualifiedName {
     ///
     /// # Errors
     ///
-    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
-    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
+    /// Returns [`ParseQualifiedNameError::InvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::Empty`]
     /// if the qualified name is empty.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::try_parse(s)
@@ -366,8 +366,8 @@ impl TryFrom<&str> for QualifiedName {
     ///
     /// # Errors
     ///
-    /// Returns [`ParseQualifiedNameError::ContainInvalidIdentifier`] if any of the identifiers
-    /// in the qualified name are invalid, or [`ParseQualifiedNameError::IsEmptyQualifiedName`]
+    /// Returns [`ParseQualifiedNameError::InvalidIdentifier`] if any of the identifiers
+    /// in the qualified name are invalid, or [`ParseQualifiedNameError::Empty`]
     /// if the qualified name is empty.
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Self::try_parse(value)
