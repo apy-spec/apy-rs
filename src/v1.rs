@@ -24,7 +24,7 @@
 //! #     Ok(())
 //! # }
 //! ```
-use crate::{FromEmptyIteratorError, OneOrMany, Value, default_true};
+use crate::{EmptyCollectionError, OneOrMany, Value, default_true};
 #[cfg(feature = "schemars")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -191,7 +191,7 @@ pub enum FromInvalidQualifiedNameError {
     #[error("The qualified name contains an invalid identifier.")]
     ContainInvalidIdentifier(#[from] FromInvalidIdentifierError),
     #[error("The qualified name is empty.")]
-    IsEmptyQualifiedName(#[from] FromEmptyIteratorError),
+    IsEmptyQualifiedName(#[from] EmptyCollectionError),
 }
 
 /// A qualified name, which is a dot-separated sequence of identifiers used to identify a module,

@@ -19,10 +19,10 @@ pub(crate) fn default_true() -> bool {
 
 const EXPECT_SELF_NON_EMPTY_MESSAGE: &str = "Self should never be empty";
 
-/// An error indicating that an attempt was made to convert an empty iterator into a `OneOrMany` instance.
+/// The error returned when attempting to create a [`OneOrMany`] from an empty collection or iterator.
 #[derive(Debug, Error)]
-#[error("Tried to convert an empty iterator")]
-pub struct FromEmptyIteratorError;
+#[error("cannot create OneOrMany from an empty collection")]
+pub struct EmptyCollectionError;
 
 /// A wrapper type that can hold either a single value of type `T` or multiple values of type `T`.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -98,9 +98,9 @@ impl<T> OneOrMany<T> {
     /// #     Ok(())
     /// # }
     /// ```
-    pub fn try_many(elements: Vec<T>) -> Result<Self, FromEmptyIteratorError> {
+    pub fn try_many(elements: Vec<T>) -> Result<Self, EmptyCollectionError> {
         if elements.is_empty() {
-            Err(FromEmptyIteratorError)
+            Err(EmptyCollectionError)
         } else {
             Ok(Self { elements })
         }
@@ -128,9 +128,7 @@ impl<T> OneOrMany<T> {
     /// #     Ok(())
     /// # }
     /// ```
-    pub fn try_from_iter<I: IntoIterator<Item = T>>(
-        iter: I,
-    ) -> Result<Self, FromEmptyIteratorError> {
+    pub fn try_from_iter<I: IntoIterator<Item = T>>(iter: I) -> Result<Self, EmptyCollectionError> {
         Self::try_many(Vec::from_iter(iter))
     }
 
@@ -303,7 +301,7 @@ impl<T> From<T> for OneOrMany<T> {
 }
 
 impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
-    type Error = FromEmptyIteratorError;
+    type Error = EmptyCollectionError;
 
     /// Attempts to convert a `Vec<T>` into a `OneOrMany<T>` instance. Returns an error if the vector is empty.
     ///
