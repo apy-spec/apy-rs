@@ -50,9 +50,59 @@ impl<T> OneOrMany<T> {
     /// #     Ok(())
     /// # }
     /// ```
-    pub fn one(value: T) -> Self {
+    pub fn one(element: T) -> Self {
         Self {
-            elements: vec![value],
+            elements: vec![element],
+        }
+    }
+
+    /// Creates a new `OneOrMany` instance containing multiple values.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the provided `elements` vector is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::OneOrMany;
+    ///
+    /// let many = OneOrMany::many(vec![42, 43]);
+    ///
+    /// assert_eq!(many.first(), &42);
+    /// assert_eq!(many.last(), &43);
+    /// ```
+    pub fn many(elements: Vec<T>) -> Self {
+        Self::try_many(elements).expect("`elements` must not be empty")
+    }
+
+    /// Attempts to create a new `OneOrMany` instance containing multiple values. Returns an error if the provided vector is empty.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `FromEmptyIteratorError` if the provided `elements` vector is empty.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use std::error::Error;
+    /// #
+    /// # fn main() -> Result<(), Box<dyn Error>> {
+    /// use apy::OneOrMany;
+    ///
+    /// let many = OneOrMany::try_many(vec![42, 43])?;
+    ///
+    /// assert_eq!(many.first(), &42);
+    /// assert_eq!(many.last(), &43);
+    /// #
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn try_many(elements: Vec<T>) -> Result<Self, FromEmptyIteratorError> {
+        if elements.is_empty() {
+            Err(FromEmptyIteratorError)
+        } else {
+            Ok(Self { elements })
         }
     }
 
@@ -81,7 +131,7 @@ impl<T> OneOrMany<T> {
     pub fn try_from_iter<I: IntoIterator<Item = T>>(
         iter: I,
     ) -> Result<Self, FromEmptyIteratorError> {
-        Self::try_from(Vec::from_iter(iter))
+        Self::try_many(Vec::from_iter(iter))
     }
 
     /// Returns a reference to the first element in the `OneOrMany` instance.
@@ -276,11 +326,7 @@ impl<T> TryFrom<Vec<T>> for OneOrMany<T> {
     /// # }
     /// ```
     fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
-        if value.is_empty() {
-            Err(FromEmptyIteratorError)
-        } else {
-            Ok(Self { elements: value })
-        }
+        Self::try_many(value)
     }
 }
 
@@ -360,7 +406,7 @@ macro_rules! one_or_many {
         compile_error!("`one_or_many!` requires at least one element");
     };
     ($($x:expr),+ $(,)?) => {
-        $crate::OneOrMany::try_from(vec![$($x),+]).expect("`one_or_many!` should never be empty")
+        $crate::OneOrMany::many(vec![$($x),+])
     };
 }
 
