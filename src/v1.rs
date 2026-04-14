@@ -9,8 +9,8 @@
 //! use apy::OneOrMany;
 //! use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Parameter, ParameterKind, Parameters, Generic, GenericKind, Exception, Signature, Function, Attribute, Variable, Module, ApyV1, ModuleAttributes};
 //!
-//! let identifier = Identifier::try_from("my_variable")?;
-//! let int_type = Type::Reference(TypeReference::new(QualifiedName::try_from("int")?));
+//! let identifier = Identifier::parse("my_variable");
+//! let int_type = Type::Reference(TypeReference::new(QualifiedName::parse("int")));
 //! let variable = Attribute::Variable(Variable::new(int_type));
 //!
 //! let module = Module::new(
@@ -18,7 +18,7 @@
 //!     ModuleAttributes::new(),
 //! );
 //!
-//! let module_name = QualifiedName::try_from("my_module.submodule")?;
+//! let module_name = QualifiedName::parse("my_module.submodule");
 //! let mut apy = ApyV1::new();
 //! apy.modules.insert(module_name, module);
 //! #     Ok(())
@@ -196,19 +196,13 @@ impl From<Identifier> for String {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::Identifier;
     ///
-    /// let identifier = Identifier::try_from("valid_identifier")?;
+    /// let identifier = Identifier::parse("valid_identifier");
     ///
     /// let identifier_string = String::from(identifier);
     ///
     /// assert_eq!(identifier_string, "valid_identifier");
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     fn from(value: Identifier) -> Self {
         value.name
@@ -263,18 +257,12 @@ impl QualifiedName {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{Identifier, QualifiedName};
     /// use apy::OneOrMany;
     ///
-    /// let qualified_name = QualifiedName::new(OneOrMany::one(Identifier::try_from("my_module")?));
+    /// let qualified_name = QualifiedName::new(OneOrMany::one(Identifier::parse("my_module")));
     ///
     /// assert_eq!(qualified_name.join(), "my_module");
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(identifiers: OneOrMany<Identifier>) -> Self {
         Self { identifiers }
@@ -380,19 +368,13 @@ impl From<QualifiedName> for String {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::QualifiedName;
     ///
-    /// let qualified_name = QualifiedName::try_from("valid.qualified.name")?;
+    /// let qualified_name = QualifiedName::parse("valid.qualified.name");
     ///
     /// let qualified_name_string = String::from(qualified_name);
     ///
     /// assert_eq!(qualified_name_string, "valid.qualified.name");
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     fn from(value: QualifiedName) -> String {
         value.join()
@@ -561,21 +543,15 @@ impl TypeReference {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, TypeReference};
     ///
-    /// let type_reference = TypeReference::new(QualifiedName::try_from("int")?);
+    /// let type_reference = TypeReference::new(QualifiedName::parse("int"));
     ///
-    /// assert_eq!(type_reference.id.join(), "int");
+    /// assert_eq!(type_reference.to_string(), "int");
     /// assert!(type_reference.module.is_none());
     /// assert_eq!(type_reference.history_index, 0);
     /// assert!(type_reference.arguments.is_empty());
     /// assert!(type_reference.extensions.is_empty());
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(id: QualifiedName) -> Self {
         Self {
@@ -764,15 +740,12 @@ impl Parameter {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{Identifier, QualifiedName, Type, TypeReference, ParameterKind, Parameter};
     ///
     /// let parameter = Parameter::new(
-    ///     Identifier::try_from("x")?,
+    ///     Identifier::parse("x"),
     ///     ParameterKind::PositionalOnly,
-    ///     Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)),
+    ///     Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
     /// );
     ///
     /// assert_eq!(parameter.name.as_ref(), "x");
@@ -782,9 +755,6 @@ impl Parameter {
     /// assert!(!parameter.is_optional);
     /// assert!(!parameter.is_deprecated);
     /// assert!(parameter.extensions.is_empty());
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(name: Identifier, kind: ParameterKind, parameter_type: Type) -> Self {
         Self {
@@ -913,28 +883,22 @@ impl TryFrom<Vec<Parameter>> for Parameters {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Parameter, ParameterKind, Parameters};
     ///
     /// let parameters = vec![
     ///     Parameter::new(
-    ///         Identifier::try_from("x")?,
+    ///         Identifier::parse("x"),
     ///         ParameterKind::PositionalOnly,
-    ///         Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)),
+    ///         Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
     ///     ),
     ///     Parameter::new(
-    ///        Identifier::try_from("y")?,
+    ///        Identifier::parse("y"),
     ///        ParameterKind::KeywordOnly,
-    ///        Type::Reference(TypeReference::new(QualifiedName::try_from("str")?)),
+    ///        Type::Reference(TypeReference::new(QualifiedName::parse("str"))),
     ///     ),
     /// ];
     ///
     /// assert!(Parameters::try_from(parameters).is_ok());
-    /// #
-    /// #     Ok(())
-    /// # }
     /// ```
     fn try_from(value: Vec<Parameter>) -> Result<Self, Self::Error> {
         if !value.iter().map(|parameter| parameter.kind).is_sorted() {
@@ -1008,14 +972,14 @@ impl From<Parameters> for Vec<Parameter> {
     ///
     /// let parameters = Parameters::try_from(vec![
     ///     Parameter::new(
-    ///         Identifier::try_from("x")?,
+    ///         Identifier::parse("x"),
     ///         ParameterKind::PositionalOnly,
-    ///         Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)),
+    ///         Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
     ///     ),
     ///     Parameter::new(
-    ///        Identifier::try_from("y")?,
+    ///        Identifier::parse("y"),
     ///        ParameterKind::KeywordOnly,
-    ///        Type::Reference(TypeReference::new(QualifiedName::try_from("str")?)),
+    ///        Type::Reference(TypeReference::new(QualifiedName::parse("str"))),
     ///     ),
     /// ])?;
     ///
@@ -1212,18 +1176,13 @@ impl Exception {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, TypeReference, Type, Exception};
     ///
-    /// let exception = Exception::new(Type::Reference(TypeReference::new(QualifiedName::try_from("ValueError")?)));
+    /// let exception = Exception::new(Type::Reference(TypeReference::new(QualifiedName::parse("ValueError"))));
     ///
     /// assert_eq!(exception.exception_type.to_string(), "ValueError");
     /// assert!(exception.description.is_empty());
     /// assert!(exception.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(exception_type: Type) -> Self {
         Self {
@@ -1295,12 +1254,9 @@ impl Signature {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, TypeReference, Type, Visibility, Signature};
     ///
-    /// let signature = Signature::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)));
+    /// let signature = Signature::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))));
     ///
     /// assert_eq!(signature.return_type.to_string(), "int");
     /// assert!(signature.summary.is_empty());
@@ -1313,8 +1269,6 @@ impl Signature {
     /// assert!(!signature.is_deprecated);
     /// assert_eq!(signature.visibility, Visibility::Public);
     /// assert!(signature.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(return_type: Type) -> Self {
         Self {
@@ -1427,13 +1381,10 @@ impl Function {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     /// use apy::v1::{QualifiedName, TypeReference, Type, Signature, Function};
     ///
-    /// let function = Function::new(OneOrMany::one(Signature::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)))));
+    /// let function = Function::new(OneOrMany::one(Signature::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))))));
     ///
     /// assert_eq!(function.signature.len(), 1);
     /// assert_eq!(function.signature[0].return_type.to_string(), "int");
@@ -1442,8 +1393,6 @@ impl Function {
     /// assert!(!function.is_abstract);
     /// assert!(!function.is_final);
     /// assert!(function.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(signature: OneOrMany<Signature>) -> Self {
         Self {
@@ -1533,12 +1482,9 @@ impl Variable {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, TypeReference, Type, Visibility, Variable};
     ///
-    /// let variable = Variable::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)));
+    /// let variable = Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))));
     ///
     /// assert_eq!(variable.variable_type.to_string(), "int");
     /// assert!(variable.description.is_empty());
@@ -1548,8 +1494,6 @@ impl Variable {
     /// assert!(!variable.is_deprecated);
     /// assert_eq!(variable.visibility, Visibility::Public);
     /// assert!(variable.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(variable_type: Type) -> Self {
         Self {
@@ -1647,12 +1591,9 @@ impl TypeAlias {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, TypeReference, Type, Visibility, TypeAlias};
     ///
-    /// let type_alias = TypeAlias::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?)));
+    /// let type_alias = TypeAlias::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))));
     ///
     /// assert_eq!(type_alias.alias.to_string(), "int");
     /// assert!(type_alias.description.is_empty());
@@ -1660,8 +1601,6 @@ impl TypeAlias {
     /// assert!(!type_alias.is_deprecated);
     /// assert_eq!(type_alias.visibility, Visibility::Public);
     /// assert!(type_alias.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(alias: Type) -> Self {
         Self {
@@ -1903,19 +1842,14 @@ impl ImportedModule {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{QualifiedName, Visibility, ImportedModule};
     ///
-    /// let imported_module = ImportedModule::new(QualifiedName::try_from("my.module")?);
+    /// let imported_module = ImportedModule::new(QualifiedName::parse("my.module"));
     ///
     /// assert_eq!(imported_module.module.join(), "my.module");
     /// assert!(!imported_module.is_deprecated);
     /// assert_eq!(imported_module.visibility, Visibility::Public);
     /// assert!(imported_module.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(module: QualifiedName) -> Self {
         Self {
@@ -1976,14 +1910,11 @@ impl ImportedAttribute {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::v1::{Identifier, QualifiedName, Visibility, ImportedAttribute};
     ///
     /// let imported_module_attribute = ImportedAttribute::new(
-    ///     Identifier::try_from("my_attribute")?,
-    ///     QualifiedName::try_from("my.module")?,
+    ///     Identifier::parse("my_attribute"),
+    ///     QualifiedName::parse("my.module"),
     /// );
     ///
     /// assert_eq!(imported_module_attribute.attribute.as_ref(), "my_attribute");
@@ -1991,8 +1922,6 @@ impl ImportedAttribute {
     /// assert!(!imported_module_attribute.is_deprecated);
     /// assert_eq!(imported_module_attribute.visibility, Visibility::Public);
     /// assert!(imported_module_attribute.extensions.is_empty());
-    /// #     Ok(())
-    /// # }
     /// ```
     pub fn new(attribute: Identifier, module: QualifiedName) -> Self {
         Self {
@@ -2114,27 +2043,22 @@ impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
     /// # Examples
     ///
     /// ```rust
-    /// # use std::error::Error;
-    /// #
-    /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
     /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Variable, Attribute, ModuleAttributes};
     /// use std::collections::BTreeMap;
     ///
     /// let attributes = BTreeMap::from([
     ///     (
-    ///         Identifier::try_from("my_attribute")?,
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?))))),
+    ///         Identifier::parse("my_attribute"),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int")))))),
     ///     ),
     ///     (
-    ///         Identifier::try_from("my_private_attribute")?,
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::try_from("str")?))))),
+    ///         Identifier::parse("my_private_attribute"),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("str")))))),
     ///     ),
     /// ]);
     ///
     /// assert!(ModuleAttributes::try_from(attributes).is_ok());
-    /// #     Ok(())
-    /// # }
     /// ```
     fn try_from(value: BTreeMap<Identifier, OneOrMany<Attribute>>) -> Result<Self, Self::Error> {
         let has_subclass_visibility = value.values().any(|attributes| {
@@ -2179,12 +2103,12 @@ impl From<ModuleAttributes> for BTreeMap<Identifier, OneOrMany<Attribute>> {
     ///
     /// let module_attributes = ModuleAttributes::try_from(BTreeMap::from([
     ///     (
-    ///         Identifier::try_from("my_attribute")?,
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::try_from("int")?))))),
+    ///         Identifier::parse("my_attribute"),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int")))))),
     ///     ),
     ///     (
-    ///         Identifier::try_from("my_private_attribute")?,
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::try_from("str")?))))),
+    ///         Identifier::parse("my_private_attribute"),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("str")))))),
     ///     ),
     /// ]))?;
     /// #
