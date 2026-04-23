@@ -27,7 +27,7 @@
 use crate::{EmptyCollectionError, OneOrMany, Value, default_true};
 #[cfg(feature = "schemars")]
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Display;
 use std::ops::Deref;
@@ -48,8 +48,7 @@ pub struct ParseIdentifierError;
 /// - [PEP 3131 – Supporting Non-ASCII Identifiers](https://peps.python.org/pep-3131/)
 /// - [Lexical analysis - Names (identifiers and keywords)](https://docs.python.org/3/reference/lexical_analysis.html#names-identifiers-and-keywords)
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-#[serde(transparent)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Identifier {
     // Invariant: name should be a valid Python identifier
     name: String,
@@ -229,6 +228,24 @@ impl Display for Identifier {
     }
 }
 
+impl Serialize for Identifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.name)
+    }
+}
+
+impl<'de> Deserialize<'de> for Identifier {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Identifier::try_parse(&String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
+    }
+}
+
 /// The error returned when trying to convert an invalid qualified name to a [`QualifiedName`].
 #[derive(Debug, Error)]
 pub enum ParseQualifiedNameError {
@@ -245,8 +262,8 @@ pub enum ParseQualifiedNameError {
 /// - [PEP 3155 – Qualified name for classes and functions](https://peps.python.org/pep-3155/)
 /// - [Glossary - Qualified name](https://docs.python.org/3/glossary.html#term-qualified-name)
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Serialize, Deserialize)]
-#[serde(try_from = "&str", into = "String")]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[schemars(try_from = "&str", into = "String")]
 pub struct QualifiedName {
     pub identifiers: OneOrMany<Identifier>,
 }
@@ -384,6 +401,25 @@ impl From<QualifiedName> for String {
 impl Display for QualifiedName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.join().fmt(f)
+    }
+}
+
+impl Serialize for QualifiedName {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.join())
+    }
+}
+
+impl<'de> Deserialize<'de> for QualifiedName {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        QualifiedName::try_parse(&String::deserialize(deserializer)?)
+            .map_err(serde::de::Error::custom)
     }
 }
 
