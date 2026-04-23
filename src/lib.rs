@@ -431,7 +431,7 @@ impl Apy {
     ///
     /// Returns a [`ParseApyError`] if the provided string is not valid JSON or does not conform to the expected APY structure.
     pub fn from_json_str(json_str: &str) -> Result<Self, ParseApyError> {
-        serde_json::from_str(json_str)?
+        Ok(serde_json::from_str(json_str)?)
     }
 
     /// Parses an [`Apy`] from a reader containing JSON data.
@@ -440,7 +440,7 @@ impl Apy {
     ///
     /// Returns a [`ParseApyError`] if the provided reader contains invalid JSON or does not conform to the expected APY structure.
     pub fn from_json_reader(reader: impl std::io::Read) -> Result<Self, ParseApyError> {
-        serde_json::from_reader(reader)?
+        Ok(serde_json::from_reader(reader)?)
     }
 
     /// Dumps the [`Apy`] instance to a JSON string.
@@ -468,7 +468,7 @@ impl Apy {
     /// Returns a [`ParseApyError`] if the provided string is not valid YAML or does not conform to the expected APY structure.
     #[cfg(feature = "yaml")]
     pub fn from_yaml_str(yaml_str: &str) -> Result<Self, ParseApyError> {
-        serde_saphyr::from_str(yaml_str)?
+        Ok(serde_saphyr::from_str(yaml_str)?)
     }
 
     /// Parses an [`Apy`] from a reader containing YAML data.
@@ -478,7 +478,7 @@ impl Apy {
     /// Returns a [`ParseApyError`] if the provided reader contains invalid YAML or does not conform to the expected APY structure.
     #[cfg(feature = "yaml")]
     pub fn from_yaml_reader(reader: impl std::io::Read) -> Result<Self, ParseApyError> {
-        serde_saphyr::from_reader(reader)?
+        Ok(serde_saphyr::from_reader(reader)?)
     }
 
     /// Dumps the [`Apy`] instance to a YAML string.
