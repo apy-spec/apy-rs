@@ -363,6 +363,25 @@ impl FromStr for QualifiedName {
     }
 }
 
+impl From<Identifier> for QualifiedName {
+    /// Converts an [`Identifier`] into a [`QualifiedName`] with a single identifier.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::{Identifier, QualifiedName};
+    ///
+    /// let identifier = Identifier::parse("my_identifier");
+    ///
+    /// let qualified_name = QualifiedName::from(identifier);
+    ///
+    /// assert_eq!(qualified_name.join(), "my_identifier");
+    /// ```
+    fn from(value: Identifier) -> Self {
+        Self::new(OneOrMany::one(value))
+    }
+}
+
 impl TryFrom<&str> for QualifiedName {
     type Error = ParseQualifiedNameError;
 
