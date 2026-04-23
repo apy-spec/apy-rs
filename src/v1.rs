@@ -263,7 +263,7 @@ pub enum ParseQualifiedNameError {
 /// - [Glossary - Qualified name](https://docs.python.org/3/glossary.html#term-qualified-name)
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-#[schemars(try_from = "&str", into = "String")]
+#[cfg_attr(feature = "schemars", schemars(try_from = "&str", into = "String"))]
 pub struct QualifiedName {
     pub identifiers: OneOrMany<Identifier>,
 }
