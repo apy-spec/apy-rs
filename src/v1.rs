@@ -339,11 +339,21 @@ impl QualifiedName {
     /// Joins the identifiers of the qualified name with dots to create a string representation
     /// of the qualified name.
     pub fn join(&self) -> String {
-        self.identifiers
-            .iter()
-            .map(|identifier| identifier.as_ref())
-            .collect::<Vec<_>>()
-            .join(".")
+        let mut identifier_iter = self.identifiers.iter();
+
+        let mut result = String::new();
+
+        result.push_str(
+            identifier_iter
+                .next()
+                .expect("qualified name should have at least one identifier"),
+        );
+        for identifier in identifier_iter {
+            result.push('.');
+            result.push_str(identifier);
+        }
+
+        result
     }
 }
 
