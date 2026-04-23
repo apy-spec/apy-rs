@@ -28,6 +28,7 @@ use crate::{EmptyCollectionError, OneOrMany, Value, default_true};
 #[cfg(feature = "schemars")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Display;
 use std::ops::Deref;
@@ -218,6 +219,43 @@ impl Deref for Identifier {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
+        &self.name
+    }
+}
+
+impl PartialEq<str> for Identifier {
+    fn eq(&self, other: &str) -> bool {
+        self.name == other
+    }
+}
+
+impl Borrow<str> for Identifier {
+    /// Borrows the `str` from the [`Identifier`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::borrow::Borrow;
+    /// use apy::v1::Identifier;
+    ///
+    /// let identifier = Identifier::parse("valid_identifier");
+    /// let borrowed_str: &str = identifier.borrow();
+    ///
+    /// assert_eq!(borrowed_str, "valid_identifier");
+    /// ```
+    ///
+    /// Mostly useful when using [`Identifier`] as keys in a map:
+    /// ```rust
+    /// use std::collections::HashMap;
+    /// use apy::v1::Identifier;
+    ///
+    /// let mut attributes: HashMap<Identifier, String> = HashMap::new();
+    ///
+    /// attributes.insert(Identifier::parse("valid_identifier"), "some value".to_owned());
+    ///
+    /// assert_eq!(attributes["valid_identifier"], "some value");
+    /// ```
+    fn borrow(&self) -> &str {
         &self.name
     }
 }
