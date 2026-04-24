@@ -495,6 +495,25 @@ impl PartialEq<str> for QualifiedName {
     }
 }
 
+impl Borrow<[Identifier]> for QualifiedName {
+    /// Borrows the slice of [`Identifier`] from the [`QualifiedName`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::borrow::Borrow;
+    /// use apy::v1::{Identifier, QualifiedName};
+    ///
+    /// let qualified_name = QualifiedName::parse("valid.qualified.name");
+    /// let borrowed_identifiers: &[Identifier] = qualified_name.borrow();
+    ///
+    /// assert_eq!(borrowed_identifiers, &[Identifier::parse("valid"), Identifier::parse("qualified"), Identifier::parse("name")]);
+    /// ```
+    fn borrow(&self) -> &[Identifier] {
+        self.identifiers.borrow()
+    }
+}
+
 impl Display for QualifiedName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.join().fmt(f)
