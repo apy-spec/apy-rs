@@ -465,6 +465,36 @@ impl From<QualifiedName> for String {
     }
 }
 
+impl PartialEq<str> for QualifiedName {
+    /// Checks if the qualified name is equal to a [`str`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::QualifiedName;
+    ///
+    /// let qualified_name = QualifiedName::parse("valid.qualified.name");
+    ///
+    /// assert_eq!(&qualified_name, "valid.qualified.name");
+    /// assert_ne!(&qualified_name, "invalid.qualified.name");
+    /// assert_ne!(&qualified_name, "invalid.name");
+    /// ```
+    fn eq(&self, other: &str) -> bool {
+        let mut identifier_iter = self.identifiers.iter();
+
+        for other_identifier in other.split(".") {
+            let Some(identifier) = identifier_iter.next() else {
+                return false;
+            };
+            if identifier != other_identifier {
+                return false;
+            }
+        }
+
+        identifier_iter.next().is_none()
+    }
+}
+
 impl Display for QualifiedName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.join().fmt(f)
