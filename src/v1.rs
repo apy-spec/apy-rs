@@ -244,7 +244,7 @@ impl Borrow<str> for Identifier {
     /// assert_eq!(borrowed_str, "valid_identifier");
     /// ```
     ///
-    /// Mostly useful when using [`Identifier`] as keys in a map:
+    /// Mostly useful when using [`Identifier`] as keys in a map/set:
     /// ```rust
     /// use std::collections::HashMap;
     /// use apy::v1::Identifier;
