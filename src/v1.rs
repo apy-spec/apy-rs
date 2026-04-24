@@ -256,7 +256,7 @@ impl Borrow<str> for Identifier {
     /// assert_eq!(attributes["valid_identifier"], "some value");
     /// ```
     fn borrow(&self) -> &str {
-        &self.name
+        self.name.borrow()
     }
 }
 
