@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub use serde_json::{Error, Map, Value, to_value};
 #[cfg(feature = "yaml")]
 use serde_saphyr;
+use std::borrow::Borrow;
 use std::ops::Deref;
 use thiserror::Error;
 #[cfg(feature = "schemars")]
@@ -331,6 +332,44 @@ impl<T> Deref for OneOrMany<T> {
 
     fn deref(&self) -> &Self::Target {
         &self.elements
+    }
+}
+
+impl<T: PartialEq> PartialEq<[T]> for OneOrMany<T> {
+    fn eq(&self, other: &[T]) -> bool {
+        self.elements == other
+    }
+}
+
+impl<T: PartialEq> Borrow<[T]> for OneOrMany<T> {
+    /// Borrows a slice of type [`T`] from the [`OneOrMany<T>`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::borrow::Borrow;
+    /// use apy::OneOrMany;
+    ///
+    /// let many = OneOrMany::many(vec![1, 2, 3]);
+    /// let borrowed_slice: &[u32] = many.borrow();
+    ///
+    /// assert_eq!(borrowed_slice, &[1, 2, 3]);
+    /// ```
+    ///
+    /// Mostly useful when using [`OneOrMany<T>`] as keys in a map/set:
+    ///
+    /// ```rust
+    /// use std::collections::HashSet;
+    /// use apy::OneOrMany;
+    ///
+    /// let mut set: HashSet<OneOrMany<u32>> = HashSet::new();
+    ///
+    /// set.insert(OneOrMany::one(42));
+    ///
+    /// assert!(set.contains(&[42][..]));
+    /// ```
+    fn borrow(&self) -> &[T] {
+        self.elements.borrow()
     }
 }
 
