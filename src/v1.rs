@@ -7,10 +7,10 @@
 //! # fn main() -> Result<(), Box<dyn Error>> {
 //! use std::collections::BTreeMap;
 //! use apy::OneOrMany;
-//! use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Parameter, ParameterKind, Parameters, Generic, GenericKind, Exception, Signature, Function, Attribute, Variable, Module, ApyV1, ModuleAttributes};
+//! use apy::v1::{Identifier, QualifiedName, TypeReference, TypeInstance, Type, Parameter, ParameterKind, Parameters, Generic, GenericKind, Exception, Signature, Function, Attribute, Variable, Module, ApyV1, ModuleAttributes};
 //!
 //! let identifier = Identifier::parse("my_variable");
-//! let int_type = Type::Reference(TypeReference::new(QualifiedName::parse("int")));
+//! let int_type = Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int"))));
 //! let variable = Attribute::Variable(Variable::new(int_type));
 //!
 //! let module = Module::new(
@@ -665,7 +665,7 @@ impl Display for TypeArgument {
     }
 }
 
-/// A type reference, which is a reference to a qualified name with optional type arguments.
+/// A type reference, which is a reference to a qualified name.
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
 #[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
 pub struct TypeReference {
@@ -681,9 +681,6 @@ pub struct TypeReference {
     /// Used when type are overridden in the same namespace.
     #[serde(default)]
     pub history_index: usize,
-
-    #[serde(default)]
-    pub arguments: Vec<TypeArgument>,
 
     #[serde(default, flatten)]
     pub extensions: BTreeMap<String, Value>,
@@ -702,7 +699,6 @@ impl TypeReference {
     /// assert_eq!(type_reference.to_string(), "int");
     /// assert!(type_reference.module.is_none());
     /// assert_eq!(type_reference.history_index, 0);
-    /// assert!(type_reference.arguments.is_empty());
     /// assert!(type_reference.extensions.is_empty());
     /// ```
     pub fn new(id: QualifiedName) -> Self {
@@ -710,7 +706,6 @@ impl TypeReference {
             id,
             module: None,
             history_index: 0,
-            arguments: Vec::new(),
             extensions: BTreeMap::new(),
         }
     }
@@ -733,12 +728,6 @@ impl TypeReference {
         self
     }
 
-    /// Sets the arguments of the type and returns the modified [`TypeReference`].
-    pub fn with_arguments(mut self, arguments: Vec<TypeArgument>) -> Self {
-        self.arguments = arguments;
-        self
-    }
-
     /// Sets the extensions of the type and returns the modified [`TypeReference`].
     pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
         self.extensions = extensions;
@@ -749,6 +738,75 @@ impl TypeReference {
 impl Display for TypeReference {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.id.fmt(f)?;
+
+        if let Some(module) = &self.module {
+            write!(f, "@{{{}}}", module)?;
+        }
+
+        Ok(())
+    }
+}
+
+/// A type instance, which is the instance of a type reference with optional type arguments.
+#[cfg_attr(feature = "schemars", derive(JsonSchema))]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
+pub struct TypeInstance {
+    pub reference: TypeReference,
+
+    #[serde(default)]
+    pub arguments: Vec<TypeArgument>,
+
+    #[serde(default, flatten)]
+    pub extensions: BTreeMap<String, Value>,
+}
+
+impl TypeInstance {
+    /// Creates a new [`TypeInstance`] with the given type reference and default values for the other fields.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use apy::v1::{QualifiedName, TypeReference, TypeInstance};
+    ///
+    /// let type_reference = TypeReference::new(QualifiedName::parse("int"));
+    /// let type_instance = TypeInstance::new(type_reference);
+    ///
+    /// assert_eq!(type_instance.to_string(), "@int");
+    /// assert_eq!(&type_instance.reference.id, "int");
+    /// assert!(type_instance.reference.module.is_none());
+    /// assert!(type_instance.arguments.is_empty());
+    /// assert!(type_instance.extensions.is_empty());
+    /// ```
+    pub fn new(reference: TypeReference) -> Self {
+        Self {
+            reference,
+            arguments: Vec::new(),
+            extensions: BTreeMap::new(),
+        }
+    }
+
+    /// Sets the type reference of the type instance and returns the modified [`TypeInstance`].
+    pub fn with_reference(mut self, reference: TypeReference) -> Self {
+        self.reference = reference;
+        self
+    }
+
+    /// Sets the arguments of the type and returns the modified [`TypeInstance`].
+    pub fn with_arguments(mut self, arguments: Vec<TypeArgument>) -> Self {
+        self.arguments = arguments;
+        self
+    }
+
+    /// Sets the extensions of the type and returns the modified [`TypeInstance`].
+    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
+        self.extensions = extensions;
+        self
+    }
+}
+
+impl Display for TypeInstance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "@{}", self.reference)?;
 
         if !self.arguments.is_empty() {
             write!(f, "[")?;
@@ -776,7 +834,7 @@ impl Display for TypeLiteral {
     }
 }
 
-/// A type, which is a type reference or a type literal.
+/// A type, which is a type reference, type instance or a type literal.
 ///
 /// # References:
 /// - [PEP 484 - Type Hints](https://peps.python.org/pep-0484/)
@@ -788,6 +846,7 @@ impl Display for TypeLiteral {
 #[serde(untagged)]
 pub enum Type {
     Reference(TypeReference),
+    Instance(TypeInstance),
     Literal(TypeLiteral),
 }
 
@@ -795,6 +854,7 @@ impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Type::Reference(reference) => reference.fmt(f),
+            Type::Instance(instance) => instance.fmt(f),
             Type::Literal(literal) => literal.fmt(f),
         }
     }
@@ -892,17 +952,17 @@ impl Parameter {
     /// # Examples
     ///
     /// ```rust
-    /// use apy::v1::{Identifier, QualifiedName, Type, TypeReference, ParameterKind, Parameter};
+    /// use apy::v1::{Identifier, QualifiedName, Type, TypeReference, TypeInstance, ParameterKind, Parameter};
     ///
     /// let parameter = Parameter::new(
     ///     Identifier::parse("x"),
     ///     ParameterKind::PositionalOnly,
-    ///     Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
+    ///     Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))),
     /// );
     ///
     /// assert_eq!(parameter.name.as_ref(), "x");
     /// assert_eq!(parameter.kind, ParameterKind::PositionalOnly);
-    /// assert_eq!(parameter.parameter_type.to_string(), "int");
+    /// assert_eq!(parameter.parameter_type.to_string(), "@int");
     /// assert!(parameter.description.is_empty());
     /// assert!(!parameter.is_optional);
     /// assert!(!parameter.is_deprecated);
@@ -1035,18 +1095,18 @@ impl TryFrom<Vec<Parameter>> for Parameters {
     /// # Examples
     ///
     /// ```rust
-    /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Parameter, ParameterKind, Parameters};
+    /// use apy::v1::{Identifier, QualifiedName, TypeReference, TypeInstance, Type, Parameter, ParameterKind, Parameters};
     ///
     /// let parameters = vec![
     ///     Parameter::new(
     ///         Identifier::parse("x"),
     ///         ParameterKind::PositionalOnly,
-    ///         Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
+    ///         Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))),
     ///     ),
     ///     Parameter::new(
     ///        Identifier::parse("y"),
     ///        ParameterKind::KeywordOnly,
-    ///        Type::Reference(TypeReference::new(QualifiedName::parse("str"))),
+    ///        Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("str")))),
     ///     ),
     /// ];
     ///
@@ -1120,18 +1180,18 @@ impl From<Parameters> for Vec<Parameter> {
     /// # use std::error::Error;
     /// #
     /// # fn main() -> Result<(), Box<dyn Error>> {
-    /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Parameter, ParameterKind, Parameters};
+    /// use apy::v1::{Identifier, QualifiedName, TypeReference, TypeInstance, Type, Parameter, ParameterKind, Parameters};
     ///
     /// let parameters = Parameters::try_from(vec![
     ///     Parameter::new(
     ///         Identifier::parse("x"),
     ///         ParameterKind::PositionalOnly,
-    ///         Type::Reference(TypeReference::new(QualifiedName::parse("int"))),
+    ///         Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))),
     ///     ),
     ///     Parameter::new(
     ///        Identifier::parse("y"),
     ///        ParameterKind::KeywordOnly,
-    ///        Type::Reference(TypeReference::new(QualifiedName::parse("str"))),
+    ///        Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("str")))),
     ///     ),
     /// ])?;
     ///
@@ -1140,10 +1200,10 @@ impl From<Parameters> for Vec<Parameter> {
     /// assert_eq!(parameters_vec.len(), 2);
     /// assert_eq!(parameters_vec[0].name.as_ref(), "x");
     /// assert_eq!(parameters_vec[0].kind, ParameterKind::PositionalOnly);
-    /// assert_eq!(parameters_vec[0].parameter_type.to_string(), "int");
+    /// assert_eq!(parameters_vec[0].parameter_type.to_string(), "@int");
     /// assert_eq!(parameters_vec[1].name.as_ref(), "y");
     /// assert_eq!(parameters_vec[1].kind, ParameterKind::KeywordOnly);
-    /// assert_eq!(parameters_vec[1].parameter_type.to_string(), "str");
+    /// assert_eq!(parameters_vec[1].parameter_type.to_string(), "@str");
     /// #
     /// #     Ok(())
     /// # }
@@ -1328,7 +1388,7 @@ impl Exception {
     /// # Examples
     ///
     /// ```rust
-    /// use apy::v1::{QualifiedName, TypeReference, Type, Exception};
+    /// use apy::v1::{QualifiedName, TypeReference, TypeInstance, Type, Exception};
     ///
     /// let exception = Exception::new(Type::Reference(TypeReference::new(QualifiedName::parse("ValueError"))));
     ///
@@ -1406,11 +1466,11 @@ impl Signature {
     /// # Examples
     ///
     /// ```rust
-    /// use apy::v1::{QualifiedName, TypeReference, Type, Visibility, Signature};
+    /// use apy::v1::{QualifiedName, TypeReference, TypeInstance, Type, Visibility, Signature};
     ///
-    /// let signature = Signature::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))));
+    /// let signature = Signature::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))));
     ///
-    /// assert_eq!(signature.return_type.to_string(), "int");
+    /// assert_eq!(signature.return_type.to_string(), "@int");
     /// assert!(signature.summary.is_empty());
     /// assert!(signature.description.is_empty());
     /// assert!(signature.generics.is_empty());
@@ -1534,12 +1594,12 @@ impl Function {
     ///
     /// ```rust
     /// use apy::OneOrMany;
-    /// use apy::v1::{QualifiedName, TypeReference, Type, Signature, Function};
+    /// use apy::v1::{QualifiedName, TypeReference, TypeInstance, Type, Signature, Function};
     ///
-    /// let function = Function::new(OneOrMany::one(Signature::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))))));
+    /// let function = Function::new(OneOrMany::one(Signature::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))))));
     ///
     /// assert_eq!(function.signature.len(), 1);
-    /// assert_eq!(function.signature[0].return_type.to_string(), "int");
+    /// assert_eq!(function.signature[0].return_type.to_string(), "@int");
     /// assert!(!function.is_async);
     /// assert!(!function.is_overriding);
     /// assert!(!function.is_abstract);
@@ -1634,11 +1694,11 @@ impl Variable {
     /// # Examples
     ///
     /// ```rust
-    /// use apy::v1::{QualifiedName, TypeReference, Type, Visibility, Variable};
+    /// use apy::v1::{QualifiedName, TypeReference, TypeInstance, Type, Visibility, Variable};
     ///
-    /// let variable = Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int"))));
+    /// let variable = Variable::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int")))));
     ///
-    /// assert_eq!(variable.variable_type.to_string(), "int");
+    /// assert_eq!(variable.variable_type.to_string(), "@int");
     /// assert!(variable.description.is_empty());
     /// assert!(variable.is_initialised);
     /// assert!(!variable.is_readonly);
@@ -2056,66 +2116,6 @@ pub struct ImportedAttribute {
     pub extensions: BTreeMap<String, Value>,
 }
 
-impl ImportedAttribute {
-    /// Creates a new [`ImportedAttribute`] with the given attribute and module, and default values for the other fields.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use apy::v1::{Identifier, QualifiedName, Visibility, ImportedAttribute};
-    ///
-    /// let imported_module_attribute = ImportedAttribute::new(
-    ///     Identifier::parse("my_attribute"),
-    ///     QualifiedName::parse("my.module"),
-    /// );
-    ///
-    /// assert_eq!(imported_module_attribute.attribute.as_ref(), "my_attribute");
-    /// assert_eq!(imported_module_attribute.module.join(), "my.module");
-    /// assert!(!imported_module_attribute.is_deprecated);
-    /// assert_eq!(imported_module_attribute.visibility, Visibility::Public);
-    /// assert!(imported_module_attribute.extensions.is_empty());
-    /// ```
-    pub fn new(attribute: Identifier, module: QualifiedName) -> Self {
-        Self {
-            attribute,
-            module,
-            is_deprecated: false,
-            visibility: Visibility::Public,
-            extensions: BTreeMap::new(),
-        }
-    }
-
-    /// Sets the attribute of the imported attribute and returns the modified [`ImportedAttribute`].
-    pub fn with_attribute(mut self, attribute: Identifier) -> Self {
-        self.attribute = attribute;
-        self
-    }
-
-    /// Sets the module of the imported attribute and returns the modified [`ImportedAttribute`].
-    pub fn with_module(mut self, module: QualifiedName) -> Self {
-        self.module = module;
-        self
-    }
-
-    /// Sets whether the imported attribute is deprecated and returns the modified [`ImportedAttribute`].
-    pub fn with_deprecated(mut self, is_deprecated: bool) -> Self {
-        self.is_deprecated = is_deprecated;
-        self
-    }
-
-    /// Sets the visibility of the imported attribute and returns the modified [`ImportedAttribute`].
-    pub fn with_visibility(mut self, visibility: Visibility) -> Self {
-        self.visibility = visibility;
-        self
-    }
-
-    /// Sets the extensions of the imported attribute and returns the modified [`ImportedAttribute`].
-    pub fn with_extensions(mut self, extensions: BTreeMap<String, Value>) -> Self {
-        self.extensions = extensions;
-        self
-    }
-}
-
 /// An attribute of a module, class, or instance, which can be a function, variable, class,
 /// type alias, generic, or reference to an imported module or attribute.
 #[cfg_attr(feature = "schemars", derive(JsonSchema))]
@@ -2139,9 +2139,6 @@ pub enum Attribute {
 
     #[serde(rename = "IMPORTED_MODULE")]
     ImportedModule(ImportedModule),
-
-    #[serde(rename = "IMPORTED_ATTRIBUTE")]
-    ImportedAttribute(ImportedAttribute),
 }
 
 /// The error returned when trying to convert a map of attributes into a [`ModuleAttributes`] struct.
@@ -2196,17 +2193,17 @@ impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
     ///
     /// ```rust
     /// use apy::OneOrMany;
-    /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Variable, Attribute, ModuleAttributes};
+    /// use apy::v1::{Identifier, QualifiedName, TypeReference, TypeInstance, Type, Variable, Attribute, ModuleAttributes};
     /// use std::collections::BTreeMap;
     ///
     /// let attributes = BTreeMap::from([
     ///     (
     ///         Identifier::parse("my_attribute"),
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int")))))),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int"))))))),
     ///     ),
     ///     (
     ///         Identifier::parse("my_private_attribute"),
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("str")))))),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("str"))))))),
     ///     ),
     /// ]);
     ///
@@ -2225,9 +2222,6 @@ impl TryFrom<BTreeMap<Identifier, OneOrMany<Attribute>>> for ModuleAttributes {
                 Attribute::Generic(generic) => generic.visibility == Visibility::Subclass,
                 Attribute::ImportedModule(imported_module) => {
                     imported_module.visibility == Visibility::Subclass
-                }
-                Attribute::ImportedAttribute(imported_attribute) => {
-                    imported_attribute.visibility == Visibility::Subclass
                 }
             })
         });
@@ -2250,17 +2244,17 @@ impl From<ModuleAttributes> for BTreeMap<Identifier, OneOrMany<Attribute>> {
     /// #
     /// # fn main() -> Result<(), Box<dyn Error>> {
     /// use apy::OneOrMany;
-    /// use apy::v1::{Identifier, QualifiedName, TypeReference, Type, Variable, Attribute, ModuleAttributes};
+    /// use apy::v1::{Identifier, QualifiedName, TypeReference, TypeInstance, Type, Variable, Attribute, ModuleAttributes};
     /// use std::collections::BTreeMap;
     ///
     /// let module_attributes = ModuleAttributes::try_from(BTreeMap::from([
     ///     (
     ///         Identifier::parse("my_attribute"),
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("int")))))),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("int"))))))),
     ///     ),
     ///     (
     ///         Identifier::parse("my_private_attribute"),
-    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Reference(TypeReference::new(QualifiedName::parse("str")))))),
+    ///         OneOrMany::one(Attribute::Variable(Variable::new(Type::Instance(TypeInstance::new(TypeReference::new(QualifiedName::parse("str"))))))),
     ///     ),
     /// ]))?;
     /// #
